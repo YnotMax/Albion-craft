@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Book, Calculator, Coins, LayoutDashboard, Settings, Bug, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Book, Calculator, Coins, LayoutDashboard, Settings, Bug, ChevronLeft, ChevronRight, Github, Linkedin, Instagram, ExternalLink } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -28,7 +28,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
             <div className="p-1.5 bg-amber-500/10 rounded-lg shrink-0">
               <Calculator className="w-6 h-6 text-amber-500" />
             </div>
-            {isExpanded && <span className="font-bold text-emerald-400 tracking-tight truncate animate-in fade-in duration-300">Albion Crafting</span>}
+            {isExpanded && <span className="font-bold text-emerald-400 tracking-tight truncate animate-in fade-in duration-300">Tony Max Crafting</span>}
           </div>
         </div>
 
@@ -62,7 +62,25 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
           })}
         </div>
 
-        <div className="p-4 border-t border-zinc-800 flex justify-center shrink-0">
+        <div className="p-4 border-t border-zinc-800 flex flex-col gap-4 shrink-0">
+          {isExpanded && (
+            <div className="flex flex-col gap-3 px-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Desenvolvido por</span>
+              <span className="text-sm font-bold text-zinc-200">Tony Max</span>
+              <div className="flex items-center gap-3">
+                <a href="https://github.com/YnotMax" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white transition-colors">
+                  <Github className="w-4 h-4" />
+                </a>
+                <a href="https://www.linkedin.com/in/tony-max-da-silva-costa/" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-blue-400 transition-colors">
+                  <Linkedin className="w-4 h-4" />
+                </a>
+                <a href="https://www.instagram.com/tony_max_silva/" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-pink-400 transition-colors">
+                  <Instagram className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          )}
+          
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="p-2 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors w-full flex justify-center group"
@@ -80,12 +98,19 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Mobile Header */}
         <header className="md:hidden bg-zinc-900 border-b border-zinc-800 p-4 shadow-md z-10 shrink-0">
-          <h1 className="text-xl font-bold text-emerald-400 tracking-tight flex items-center gap-2">
-            <div className="p-1.5 bg-amber-500/10 rounded-lg">
-              <Calculator className="w-5 h-5 text-amber-500" />
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold text-emerald-400 tracking-tight flex items-center gap-2">
+              <div className="p-1.5 bg-amber-500/10 rounded-lg">
+                <Calculator className="w-5 h-5 text-amber-500" />
+              </div>
+              Tony Max Crafting
+            </h1>
+            <div className="flex items-center gap-3">
+              <a href="https://github.com/YnotMax" target="_blank" rel="noopener noreferrer" className="text-zinc-500">
+                <Github className="w-4 h-4" />
+              </a>
             </div>
-            Albion Crafting
-          </h1>
+          </div>
         </header>
 
         {/* Main Content Area */}
