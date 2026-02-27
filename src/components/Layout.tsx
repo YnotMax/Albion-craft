@@ -28,7 +28,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
             <div className="p-1.5 bg-amber-500/10 rounded-lg shrink-0">
               <Calculator className="w-6 h-6 text-amber-500" />
             </div>
-            {isExpanded && <span className="font-bold text-emerald-400 tracking-tight truncate animate-in fade-in duration-300">Tony Max Crafting</span>}
+            {isExpanded && <span className="font-bold text-emerald-400 tracking-tight truncate animate-in fade-in duration-300">Albion Crafting</span>}
           </div>
         </div>
 
@@ -103,7 +103,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
               <div className="p-1.5 bg-amber-500/10 rounded-lg">
                 <Calculator className="w-5 h-5 text-amber-500" />
               </div>
-              Tony Max Crafting
+              Albion Crafting
             </h1>
             <div className="flex items-center gap-3">
               <a href="https://github.com/YnotMax" target="_blank" rel="noopener noreferrer" className="text-zinc-500">
