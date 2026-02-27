@@ -143,9 +143,13 @@ export const Dashboard: React.FC = () => {
             else if (margin > 0) statusColor = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
             else statusColor = 'bg-red-500/20 text-red-400 border-red-500/30';
 
+            let categoryAccent = 'bg-zinc-700';
+            if (calc.item.category === 'Armadura de Tecido') categoryAccent = 'bg-emerald-500';
+            else if (calc.item.category === 'Sapatos de Placa') categoryAccent = 'bg-blue-500';
+
             return (
               <div key={fav.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 shadow-sm relative group overflow-hidden">
-                <div className={`absolute top-0 left-0 w-1 h-full ${margin > 20 ? 'bg-emerald-500' : margin > 0 ? 'bg-amber-500' : 'bg-red-500'}`} />
+                <div className={`absolute top-0 left-0 w-1 h-full ${categoryAccent}`} />
                 
                 <div className="flex justify-between items-start mb-4">
                   <div>

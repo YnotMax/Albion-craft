@@ -83,8 +83,15 @@ export const Calculator: React.FC = () => {
   const focusCost = useMemo(() => {
     if (!recipe || !item) return 0;
     
-    const baseNodeId = 'baseCrafter';
+    let baseNodeId = 'baseClothArmor';
+    if (item.category === 'Sapatos de Placa') {
+      baseNodeId = 'basePlateShoes';
+    }
+    
     const specNodeId = item.id.split('_').pop() || ''; // e.g., 'SET1', 'KEEPER'
+    
+    // For plate shoes, the ID in SPEC_NODES is PLATE_SET1, etc.
+    const fullSpecNodeId = item.category === 'Sapatos de Placa' ? `PLATE_${specNodeId}` : specNodeId;
 
     const baseLevel = state.specs[baseNodeId] || 0;
     
@@ -94,7 +101,7 @@ export const Calculator: React.FC = () => {
     // Add bonuses from all specific nodes in the same tree
     SPEC_NODES.filter(n => n.baseNodeId === baseNodeId).forEach(node => {
       const level = state.specs[node.id] || 0;
-      if (node.id === specNodeId) {
+      if (node.id === fullSpecNodeId) {
         // The specific node for the item being crafted gives +250
         totalFCE += level * 250;
       } else {

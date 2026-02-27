@@ -106,24 +106,49 @@ export const Prices: React.FC = () => {
           
           let borderColor = 'border-zinc-800';
           let bgColor = 'bg-zinc-900';
+          let accentColor = 'bg-zinc-700';
           
           if (item.category === 'Recursos Refinados') {
             borderColor = 'border-amber-900/30';
             bgColor = 'bg-amber-950/10';
+            accentColor = 'bg-amber-500';
           } else if (item.category === 'Armadura de Tecido') {
             borderColor = 'border-emerald-900/30';
             bgColor = 'bg-emerald-950/10';
-          } else if (item.category === 'Diários') {
+            accentColor = 'bg-emerald-500';
+          } else if (item.category === 'Sapatos de Placa') {
             borderColor = 'border-blue-900/30';
             bgColor = 'bg-blue-950/10';
+            accentColor = 'bg-blue-500';
+          } else if (item.category === 'Diários') {
+            borderColor = 'border-purple-900/30';
+            bgColor = 'bg-purple-950/10';
+            accentColor = 'bg-purple-500';
+          } else if (item.category === 'Artefatos') {
+            borderColor = 'border-red-900/30';
+            bgColor = 'bg-red-950/10';
+            accentColor = 'bg-red-500';
           }
 
           return (
-            <div key={item.id} className={`${bgColor} border ${borderColor} rounded-xl p-4 shadow-sm hover:border-zinc-700 transition-colors flex flex-col`}>
+            <div key={item.id} className={`${bgColor} border ${borderColor} rounded-xl p-4 shadow-sm hover:border-zinc-700 transition-all relative group overflow-hidden`}>
+              <div className={`absolute top-0 left-0 w-1 h-full ${accentColor} opacity-50 group-hover:opacity-100 transition-opacity`} />
+              
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="font-semibold text-zinc-100 pr-8">{item.name}</h3>
-                  <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">{item.category} • {item.tier}</span>
+                  <h3 className="font-semibold text-zinc-100 pr-8 leading-tight">{item.name}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${
+                      item.category === 'Recursos Refinados' ? 'bg-amber-500/20 text-amber-500' :
+                      item.category === 'Armadura de Tecido' ? 'bg-emerald-500/20 text-emerald-500' :
+                      item.category === 'Sapatos de Placa' ? 'bg-blue-500/20 text-blue-500' :
+                      item.category === 'Diários' ? 'bg-purple-500/20 text-purple-500' :
+                      'bg-zinc-800 text-zinc-400'
+                    }`}>
+                      {item.category}
+                    </span>
+                    <span className="text-[10px] text-zinc-500 font-bold">{item.tier}</span>
+                  </div>
                 </div>
                 <button 
                   onClick={() => syncPrices([item.id])}
