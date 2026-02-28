@@ -29,15 +29,26 @@ export interface AppState {
   specs: Record<string, number>; // nodeId -> level (0-100)
   prices: Record<string, { buy: number; sell: number; updatedAt?: string }>; // itemId -> prices
   favorites: CraftConfig[];
+  groups: string[];
   server: 'west' | 'east' | 'europe';
   buyCity: string;
   sellCity: string;
+  calculatorState?: {
+    selectedCategory: string;
+    selectedTier: string;
+    selectedEnchantment: string;
+    selectedRecipeId: string;
+    usageFee: number;
+    rrr: number;
+    useFocus: boolean;
+  };
 }
 
 export interface CraftConfig {
   id: string;
   itemId: string;
   timestamp: number;
+  group?: string;
   configSnapshot: {
     rrr: number;
     useFocus: boolean;

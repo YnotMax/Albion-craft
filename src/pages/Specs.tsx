@@ -59,9 +59,14 @@ export const Specs: React.FC = () => {
           const isExpanded = expanded[baseNode.id];
           const specificNodes = SPEC_NODES.filter((n) => n.baseNodeId === baseNode.id);
           
+          let accentColor = 'bg-zinc-700';
+          if (baseNode.id === 'baseClothArmor') accentColor = 'bg-emerald-500';
+          else if (baseNode.id === 'basePlateShoes') accentColor = 'bg-blue-500';
+          else if (baseNode.id === 'baseSpear') accentColor = 'bg-amber-500';
+
           return (
             <div key={baseNode.id} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-sm relative">
-              <div className={`absolute top-0 left-0 w-1 h-full ${baseNode.id === 'baseClothArmor' ? 'bg-emerald-500' : 'bg-blue-500'}`} />
+              <div className={`absolute top-0 left-0 w-1 h-full ${accentColor}`} />
               <div 
                 className="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-800/50 transition-colors pl-6"
                 onClick={() => toggleExpand(baseNode.id)}

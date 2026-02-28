@@ -7,9 +7,13 @@ interface AppContextType {
   updatePrice: (itemId: string, buy: number, sell: number) => void;
   addFavorite: (config: CraftConfig) => void;
   removeFavorite: (configId: string) => void;
+  addGroup: (name: string) => void;
+  removeGroup: (name: string) => void;
+  updateFavoriteGroup: (favId: string, groupName: string | undefined) => void;
   setServer: (server: 'west' | 'east' | 'europe') => void;
   setBuyCity: (city: string) => void;
   setSellCity: (city: string) => void;
+  setCalculatorState: (calcState: any) => void;
   syncPrices: (itemIds: string[]) => Promise<void>;
   isSyncing: boolean;
   syncMessage: string | null;
@@ -54,6 +58,7 @@ const defaultState: AppState = {
       }
     }
   ],
+  groups: ['Geral', 'Robes', 'Botas'],
   server: 'west',
   buyCity: 'Caerleon',
   sellCity: 'Caerleon'
@@ -75,6 +80,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         if (!parsed.buyCity) parsed.buyCity = 'Caerleon';
         if (!parsed.sellCity) parsed.sellCity = 'Caerleon';
+        if (!parsed.groups) parsed.groups = ['Geral', 'Robes', 'Botas'];
         return parsed;
       } catch (e) {
         console.error('Failed to parse saved state', e);
@@ -118,6 +124,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
+  const addGroup = (name: string) => {
+    setState((prev) => ({
+      ...prev,
+      groups: prev.groups.includes(name) ? prev.groups : [...prev.groups, name],
+    }));
+  };
+
+  const removeGroup = (name: string) => {
+    setState((prev) => ({
+      ...prev,
+      groups: prev.groups.filter((g) => g !== name),
+      favorites: prev.favorites.map(f => f.group === name ? { ...f, group: undefined } : f)
+    }));
+  };
+
+  const updateFavoriteGroup = (favId: string, groupName: string | undefined) => {
+    setState((prev) => ({
+      ...prev,
+      favorites: prev.favorites.map(f => f.id === favId ? { ...f, group: groupName } : f)
+    }));
+  };
+
   const setServer = (server: 'west' | 'east' | 'europe') => {
     setState((prev) => ({ ...prev, server }));
   };
@@ -128,6 +156,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setSellCity = (city: string) => {
     setState((prev) => ({ ...prev, sellCity: city }));
+  };
+
+  const setCalculatorState = (calcState: any) => {
+    setState((prev) => ({ ...prev, calculatorState: calcState }));
   };
 
   const syncPrices = async (itemIds: string[]) => {
@@ -272,7 +304,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   return (
-    <AppContext.Provider value={{ state, updateSpec, updatePrice, addFavorite, removeFavorite, setServer, setBuyCity, setSellCity, syncPrices, isSyncing, syncMessage }}>
+    <AppContext.Provider value={{ 
+      state, 
+      updateSpec, 
+      updatePrice, 
+      addFavorite, 
+      removeFavorite, 
+      addGroup,
+      removeGroup,
+      updateFavoriteGroup,
+      setServer, 
+      setBuyCity, 
+      setSellCity, 
+      setCalculatorState,
+      syncPrices, 
+      isSyncing, 
+      syncMessage 
+    }}>
       {children}
     </AppContext.Provider>
   );

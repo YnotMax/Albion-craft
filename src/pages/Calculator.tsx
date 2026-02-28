@@ -7,16 +7,28 @@ import { formatTimeAgo } from '../utils/format';
 import { Calculator as CalcIcon, Save, Star, TrendingUp, TrendingDown, Settings, CheckCircle2, RefreshCw, Clock, Info } from 'lucide-react';
 
 export const Calculator: React.FC = () => {
-  const { state, updatePrice, addFavorite, syncPrices, isSyncing, syncMessage } = useAppContext();
+  const { state, updatePrice, addFavorite, syncPrices, isSyncing, syncMessage, addGroup, setCalculatorState } = useAppContext();
   
   const categories = useMemo(() => Array.from(new Set(RECIPES.map(r => ITEMS.find(i => i.id === r.itemId)?.category).filter(Boolean))) as string[], []);
-  const [selectedCategory, setSelectedCategory] = useState<string>(categories[0] || '');
+  
+  // Load initial state from AppContext
+  const initialCalcState = state.calculatorState || {
+    selectedCategory: categories[0] || '',
+    selectedTier: '',
+    selectedEnchantment: '',
+    selectedRecipeId: '',
+    usageFee: 500,
+    rrr: 15.2,
+    useFocus: false
+  };
+
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCalcState.selectedCategory);
   
   const availableTiers = useMemo(() => {
     return Array.from(new Set(RECIPES.filter(r => ITEMS.find(i => i.id === r.itemId)?.category === selectedCategory).map(r => ITEMS.find(i => i.id === r.itemId)?.tier).filter(Boolean))).sort() as string[];
   }, [selectedCategory]);
   
-  const [selectedTier, setSelectedTier] = useState<string>(availableTiers[0] || '');
+  const [selectedTier, setSelectedTier] = useState<string>(initialCalcState.selectedTier || availableTiers[0] || '');
 
   const availableEnchantments = useMemo(() => {
     return Array.from(new Set(RECIPES.filter(r => {
@@ -25,7 +37,7 @@ export const Calculator: React.FC = () => {
     }).map(r => ITEMS.find(i => i.id === r.itemId)?.enchantment).filter(Boolean))).sort() as string[];
   }, [selectedCategory, selectedTier]);
 
-  const [selectedEnchantment, setSelectedEnchantment] = useState<string>(availableEnchantments[0] || '');
+  const [selectedEnchantment, setSelectedEnchantment] = useState<string>(initialCalcState.selectedEnchantment || availableEnchantments[0] || '');
 
   const availableRecipes = useMemo(() => {
     return RECIPES.filter(r => {
@@ -34,7 +46,7 @@ export const Calculator: React.FC = () => {
     });
   }, [selectedCategory, selectedTier, selectedEnchantment]);
 
-  const [selectedRecipeId, setSelectedRecipeId] = useState<string>(availableRecipes[0]?.itemId || '');
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string>(initialCalcState.selectedRecipeId || availableRecipes[0]?.itemId || '');
 
   useEffect(() => {
     if (availableTiers.length > 0 && !availableTiers.includes(selectedTier)) {
@@ -54,12 +66,28 @@ export const Calculator: React.FC = () => {
     }
   }, [availableRecipes, selectedRecipeId]);
 
-  const [usageFee, setUsageFee] = useState<number>(500);
-  const [rrr, setRrr] = useState<number>(15.2);
-  const [useFocus, setUseFocus] = useState<boolean>(false);
+  const [usageFee, setUsageFee] = useState<number>(initialCalcState.usageFee);
+  const [rrr, setRrr] = useState<number>(initialCalcState.rrr);
+  const [useFocus, setUseFocus] = useState<boolean>(initialCalcState.useFocus);
+
+  // Save state to AppContext on change
+  useEffect(() => {
+    setCalculatorState({
+      selectedCategory,
+      selectedTier,
+      selectedEnchantment,
+      selectedRecipeId,
+      usageFee,
+      rrr,
+      useFocus
+    });
+  }, [selectedCategory, selectedTier, selectedEnchantment, selectedRecipeId, usageFee, rrr, useFocus]);
   const [marketTax, setMarketTax] = useState<number>(0.065); // 6.5% default
   const [showToast, setShowToast] = useState(false);
   const [rrrToast, setRrrToast] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string>(state.groups[0] || 'Geral');
+  const [isAddingGroup, setIsAddingGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
 
   const rrrPresets = [
     { value: 15.2, label: '15.2%', desc: 'Cidade sem bônus', color: 'text-zinc-300' },
@@ -84,14 +112,20 @@ export const Calculator: React.FC = () => {
     if (!recipe || !item) return 0;
     
     let baseNodeId = 'baseClothArmor';
+    let specNodeId = '';
+
     if (item.category === 'Sapatos de Placa') {
       baseNodeId = 'basePlateShoes';
+      specNodeId = 'PLATE_' + (item.id.split('_').pop()?.split('@')[0] || '');
+    } else if (item.category === 'Lanças') {
+      baseNodeId = 'baseSpear';
+      // For spears, the ID is T4_MAIN_SPEAR or T4_2H_PIKE
+      // We need to remove the tier (T4, T5, etc.) and the enchantment suffix (@1, @2, etc.)
+      specNodeId = item.id.replace(/^T\d_/, '').split('@')[0];
+    } else {
+      // Default to Cloth Armor
+      specNodeId = item.id.split('_').pop()?.split('@')[0] || '';
     }
-    
-    const specNodeId = item.id.split('_').pop() || ''; // e.g., 'SET1', 'KEEPER'
-    
-    // For plate shoes, the ID in SPEC_NODES is PLATE_SET1, etc.
-    const fullSpecNodeId = item.category === 'Sapatos de Placa' ? `PLATE_${specNodeId}` : specNodeId;
 
     const baseLevel = state.specs[baseNodeId] || 0;
     
@@ -101,7 +135,7 @@ export const Calculator: React.FC = () => {
     // Add bonuses from all specific nodes in the same tree
     SPEC_NODES.filter(n => n.baseNodeId === baseNodeId).forEach(node => {
       const level = state.specs[node.id] || 0;
-      if (node.id === fullSpecNodeId) {
+      if (node.id === specNodeId) {
         // The specific node for the item being crafted gives +250
         totalFCE += level * 250;
       } else {
@@ -206,6 +240,7 @@ export const Calculator: React.FC = () => {
       id: `${recipe.itemId}-${Date.now()}`,
       itemId: recipe.itemId,
       timestamp: Date.now(),
+      group: selectedGroup,
       configSnapshot: {
         usageFee,
         rrr,
@@ -227,6 +262,15 @@ export const Calculator: React.FC = () => {
       itemIdsToSync.push(recipe.journalId.replace('_EMPTY', '_FULL'));
     }
     syncPrices(itemIdsToSync);
+  };
+
+  const handleAddGroup = () => {
+    if (newGroupName.trim()) {
+      addGroup(newGroupName.trim());
+      setSelectedGroup(newGroupName.trim());
+      setNewGroupName('');
+      setIsAddingGroup(false);
+    }
   };
 
   if (!recipe || !calculations) return <div>Carregando...</div>;
@@ -267,14 +311,59 @@ export const Calculator: React.FC = () => {
           <p className="text-zinc-400 mt-1">Simule lucros e otimize o uso do seu foco.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 group/pasta relative">
+            <label className="text-[10px] text-zinc-500 uppercase font-bold">Pasta:</label>
+            {isAddingGroup ? (
+              <div className="flex items-center gap-1">
+                <input 
+                  type="text" 
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  className="bg-zinc-950 border border-zinc-600 rounded px-2 py-0.5 text-xs text-zinc-100 w-24 focus:outline-none focus:border-amber-500"
+                  placeholder="Nome..."
+                  autoFocus
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddGroup()}
+                />
+                <button onClick={handleAddGroup} className="text-emerald-500 hover:text-emerald-400 text-xs font-bold">OK</button>
+                <button onClick={() => setIsAddingGroup(false)} className="text-red-500 hover:text-red-400 text-xs font-bold">X</button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <select 
+                  value={selectedGroup}
+                  onChange={(e) => setSelectedGroup(e.target.value)}
+                  className="bg-transparent text-xs text-zinc-100 font-semibold focus:outline-none cursor-pointer"
+                >
+                  {state.groups.map(g => <option key={g} value={g} className="bg-zinc-900">{g}</option>)}
+                </select>
+                <button 
+                  onClick={() => setIsAddingGroup(true)}
+                  className="text-zinc-500 hover:text-amber-500 transition-colors"
+                  title="Nova Pasta"
+                >
+                  <CalcIcon className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+            {/* Tooltip Pasta */}
+            <div className="absolute top-full left-0 mt-2 w-48 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/pasta:opacity-100 group-hover/pasta:visible transition-all z-50 pointer-events-none">
+              Escolha em qual pasta do Dashboard este craft será salvo.
+            </div>
+          </div>
           <MarketSelector />
-          <button 
-            onClick={handleSaveFavorite}
-            className="w-full sm:w-auto bg-zinc-800 hover:bg-zinc-700 text-amber-500 font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 border border-zinc-700"
-          >
-            <Star className="w-5 h-5" />
-            Favoritar
-          </button>
+          <div className="relative group/fav w-full sm:w-auto">
+            <button 
+              onClick={handleSaveFavorite}
+              className="w-full sm:w-auto bg-zinc-800 hover:bg-zinc-700 text-amber-500 font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 border border-zinc-700"
+            >
+              <Star className="w-5 h-5" />
+              Favoritar
+            </button>
+            {/* Tooltip Favoritar */}
+            <div className="absolute top-full right-0 mt-2 w-48 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/fav:opacity-100 group-hover/fav:visible transition-all z-50 pointer-events-none text-right">
+              Salva esta configuração no Dashboard para acompanhar o lucro em tempo real.
+            </div>
+          </div>
         </div>
       </div>
 
@@ -335,8 +424,15 @@ export const Calculator: React.FC = () => {
               </div>
 
               <div>
-                <div className="flex justify-between items-end mb-1">
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">Taxa de Retorno (RRR %)</label>
+                <div className="flex justify-between items-end mb-1 group/rrr relative">
+                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block flex items-center gap-1">
+                    Taxa de Retorno (RRR %)
+                    <Info className="w-3 h-3 text-zinc-600" />
+                  </label>
+                  {/* Tooltip RRR */}
+                  <div className="absolute bottom-full left-0 mb-2 w-64 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/rrr:opacity-100 group-hover/rrr:visible transition-all z-50 pointer-events-none">
+                    Porcentagem de recursos que voltam para você após o craft. Cidades com bônus e o uso de Foco aumentam este valor.
+                  </div>
                 </div>
                 <div className="relative mb-2">
                   <input
@@ -368,21 +464,34 @@ export const Calculator: React.FC = () => {
                 </div>
               </div>
 
-              <CurrencyInput
-                label="Taxa da Estação (Prata)"
-                value={usageFee}
-                onChange={setUsageFee}
-              />
+              <div className="group/fee relative">
+                <CurrencyInput
+                  label="Taxa da Estação (Prata)"
+                  value={usageFee}
+                  onChange={setUsageFee}
+                />
+                {/* Tooltip Taxa */}
+                <div className="absolute bottom-full left-0 mb-2 w-64 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/fee:opacity-100 group-hover/fee:visible transition-all z-50 pointer-events-none">
+                  Custo cobrado pela loja (estação de craft) por cada item fabricado.
+                </div>
+              </div>
 
-              <div className="flex items-center justify-between p-3 bg-zinc-950 rounded-lg border border-zinc-800">
+              <div className="flex items-center justify-between p-3 bg-zinc-950 rounded-lg border border-zinc-800 group/focus relative">
                 <div>
-                  <span className="text-sm font-semibold text-zinc-100 block">Usar Foco</span>
+                  <span className="text-sm font-semibold text-zinc-100 block flex items-center gap-1">
+                    Usar Foco
+                    <Info className="w-3 h-3 text-zinc-600" />
+                  </span>
                   <span className="text-xs text-zinc-500">Custo: {focusCost} foco</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={useFocus} onChange={(e) => setUseFocus(e.target.checked)} />
                   <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                 </label>
+                {/* Tooltip Foco */}
+                <div className="absolute bottom-full right-0 mb-2 w-64 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/focus:opacity-100 group-hover/focus:visible transition-all z-50 pointer-events-none text-right">
+                  O uso de Foco aumenta drasticamente a Taxa de Retorno (RRR), economizando recursos valiosos.
+                </div>
               </div>
             </div>
           </div>
@@ -492,16 +601,30 @@ export const Calculator: React.FC = () => {
                   </div>
                   
                   <div className="flex gap-6 text-right">
-                    <div>
-                      <span className="text-xs text-zinc-400 uppercase font-semibold tracking-wider block mb-1">ROI</span>
+                    <div className="group/roi relative">
+                      <span className="text-xs text-zinc-400 uppercase font-semibold tracking-wider block mb-1 flex items-center gap-1 justify-end">
+                        ROI
+                        <Info className="w-3 h-3 text-zinc-600" />
+                      </span>
                       <span className={`text-2xl font-mono font-bold ${calculations.roi > 20 ? 'text-emerald-400' : calculations.roi > 0 ? 'text-amber-400' : 'text-red-400'}`}>
                         {calculations.roi.toFixed(1)}%
                       </span>
+                      {/* Tooltip ROI */}
+                      <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/roi:opacity-100 group-hover/roi:visible transition-all z-50 pointer-events-none text-right">
+                        Retorno sobre Investimento. Quanto você ganha para cada 100 pratas gastas.
+                      </div>
                     </div>
                     {useFocus && (
-                      <div>
-                        <span className="text-xs text-zinc-400 uppercase font-semibold tracking-wider block mb-1">Prata / Foco</span>
+                      <div className="group/spf relative">
+                        <span className="text-xs text-zinc-400 uppercase font-semibold tracking-wider block mb-1 flex items-center gap-1 justify-end">
+                          Prata / Foco
+                          <Info className="w-3 h-3 text-zinc-600" />
+                        </span>
                         <span className="text-2xl font-mono text-amber-400">{calculations.silverPerFocus.toFixed(2)}</span>
+                        {/* Tooltip SPF */}
+                        <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/spf:opacity-100 group-hover/spf:visible transition-all z-50 pointer-events-none text-right">
+                          Eficiência do seu Foco. Quanto de prata você lucra para cada ponto de foco gasto.
+                        </div>
                       </div>
                     )}
                   </div>

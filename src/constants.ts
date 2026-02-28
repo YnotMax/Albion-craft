@@ -33,6 +33,17 @@ const PLATE_SHOE_TYPES = [
   { id: 'FEY', name: 'Botas de Tecelão do Crepúsculo', artifact: 'FEY' },
 ];
 
+const SPEAR_TYPES = [
+  { id: 'MAIN_SPEAR', name: 'Lança', artifact: null, resources: { planks: 8, bars: 8 } },
+  { id: '2H_PIKE', name: 'Pique', artifact: null, resources: { planks: 12, bars: 8 } },
+  { id: '2H_GLAIVE', name: 'Glaive', artifact: null, resources: { planks: 12, bars: 8 } },
+  { id: 'MAIN_SPEAR_KEEPER', name: 'Lança de Garça', artifact: 'MAIN_SPEAR_KEEPER', resources: { planks: 8, bars: 8 } },
+  { id: '2H_SPEAR_MORGANA', name: 'Caçadora de Espíritos', artifact: '2H_SPEAR_MORGANA', resources: { planks: 12, bars: 8 } },
+  { id: '2H_TRINITYSPEAR', name: 'Lança da Trindade', artifact: '2H_TRINITYSPEAR', resources: { planks: 12, bars: 8 } },
+  { id: 'MAIN_SPEAR_AVALON', name: 'Quebradora do Dia', artifact: 'MAIN_SPEAR_AVALON', resources: { planks: 8, bars: 8 } },
+  { id: '2H_SPEAR_FEY', name: 'Lança da Alvorada', artifact: '2H_SPEAR_FEY', resources: { planks: 12, bars: 8 } },
+];
+
 const TIER_FAME: Record<string, number> = {
   'T4': 180,
   'T5': 360,
@@ -58,6 +69,8 @@ TIERS.forEach(tier => {
   ITEMS.push({ id: `${tier}_JOURNAL_MAGIC_FULL`, name: `Diário de Imbuidor ${tier} (Cheio)`, category: 'Diários', tier: tier as any, enchantment: '0' });
   ITEMS.push({ id: `${tier}_JOURNAL_WARRIOR_EMPTY`, name: `Diário de Ferreiro ${tier} (Vazio)`, category: 'Diários', tier: tier as any, enchantment: '0' });
   ITEMS.push({ id: `${tier}_JOURNAL_WARRIOR_FULL`, name: `Diário de Ferreiro ${tier} (Cheio)`, category: 'Diários', tier: tier as any, enchantment: '0' });
+  ITEMS.push({ id: `${tier}_JOURNAL_HUNTER_EMPTY`, name: `Diário de Caçador ${tier} (Vazio)`, category: 'Diários', tier: tier as any, enchantment: '0' });
+  ITEMS.push({ id: `${tier}_JOURNAL_HUNTER_FULL`, name: `Diário de Caçador ${tier} (Cheio)`, category: 'Diários', tier: tier as any, enchantment: '0' });
 });
 
 // Generate Artifacts
@@ -74,6 +87,12 @@ TIERS.forEach(tier => {
       ITEMS.push({ id: artifactId, name: `Artefato ${shoe.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
     }
   });
+  SPEAR_TYPES.forEach(spear => {
+    if (spear.artifact) {
+      const artifactId = `${tier}_ARTIFACT_${spear.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${spear.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
 });
 
 // Generate Resources, Robes and Shoes
@@ -88,6 +107,10 @@ TIERS.forEach(tier => {
     // Metal Bars
     const barId = `${tier}_METALBAR${enchSuffix}`;
     ITEMS.push({ id: barId, name: `Barra de Metal ${tier}.${ench}`, category: 'Recursos Refinados', tier: tier as any, enchantment: ench as any });
+
+    // Planks
+    const plankId = `${tier}_PLANKS${enchSuffix}`;
+    ITEMS.push({ id: plankId, name: `Tábua ${tier}.${ench}`, category: 'Recursos Refinados', tier: tier as any, enchantment: ench as any });
 
     const itemEnchSuffix = ench === '0' ? '' : `@${ench}`;
 
@@ -130,6 +153,32 @@ TIERS.forEach(tier => {
         baseFocusCost: TIER_FOCUS[tier] / 2, // Shoes are 1/2 focus of armor
       });
     });
+
+    // Spears
+    SPEAR_TYPES.forEach(spear => {
+      const spearId = `${tier}_${spear.id}${itemEnchSuffix}`;
+      const spearName = `${spear.name} ${tier}.${ench}`;
+      ITEMS.push({ id: spearId, name: spearName, category: 'Lanças', tier: tier as any, enchantment: ench as any });
+
+      const materials = [
+        { itemId: plankId, amount: spear.resources.planks },
+        { itemId: barId, amount: spear.resources.bars }
+      ];
+      if (spear.artifact) {
+        materials.push({ itemId: `${tier}_ARTIFACT_${spear.artifact}`, amount: 1 });
+      }
+
+      const totalResources = spear.resources.planks + spear.resources.bars;
+      const resourceMultiplier = totalResources / 16;
+
+      RECIPES.push({
+        itemId: spearId,
+        materials,
+        fame: TIER_FAME[tier] * resourceMultiplier,
+        journalId: `${tier}_JOURNAL_HUNTER_EMPTY`,
+        baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier,
+      });
+    });
   });
 });
 
@@ -155,4 +204,15 @@ export const SPEC_NODES: SpecNode[] = [
   { id: 'PLATE_MORGANA', name: 'Especialista em Botas de Judicador', baseNodeId: 'basePlateShoes', multiplier: 250, isArtifact: true },
   { id: 'PLATE_AVALON', name: 'Especialista em Botas da Bravura', baseNodeId: 'basePlateShoes', multiplier: 250, isArtifact: true },
   { id: 'PLATE_FEY', name: 'Especialista em Botas de Tecelão do Crepúsculo', baseNodeId: 'basePlateShoes', multiplier: 250, isArtifact: true },
+
+  // Spears
+  { id: 'baseSpear', name: 'Fabricante de Lanças', multiplier: 30 },
+  { id: 'MAIN_SPEAR', name: 'Especialista em Lança', baseNodeId: 'baseSpear', multiplier: 250 },
+  { id: '2H_PIKE', name: 'Especialista em Pique', baseNodeId: 'baseSpear', multiplier: 250 },
+  { id: '2H_GLAIVE', name: 'Especialista em Glaive', baseNodeId: 'baseSpear', multiplier: 250 },
+  { id: 'MAIN_SPEAR_KEEPER', name: 'Especialista em Lança de Garça', baseNodeId: 'baseSpear', multiplier: 250, isArtifact: true },
+  { id: '2H_SPEAR_MORGANA', name: 'Especialista em Caçadora de Espíritos', baseNodeId: 'baseSpear', multiplier: 250, isArtifact: true },
+  { id: '2H_TRINITYSPEAR', name: 'Especialista em Lança da Trindade', baseNodeId: 'baseSpear', multiplier: 250, isArtifact: true },
+  { id: 'MAIN_SPEAR_AVALON', name: 'Especialista em Quebradora do Dia', baseNodeId: 'baseSpear', multiplier: 250, isArtifact: true },
+  { id: '2H_SPEAR_FEY', name: 'Especialista em Lança da Alvorada', baseNodeId: 'baseSpear', multiplier: 250, isArtifact: true },
 ];
