@@ -12,14 +12,14 @@ const METAL_BAR_FAME: Record<string, number> = {
 };
 
 const ROBE_TYPES = [
-  { id: 'SET1', name: 'Robe de Erudito', artifact: null },
-  { id: 'SET2', name: 'Robe de Clérigo', artifact: null },
-  { id: 'SET3', name: 'Robe de Mago', artifact: null },
-  { id: 'KEEPER', name: 'Robe de Druida', artifact: 'KEEPER' },
-  { id: 'HELL', name: 'Robe Malévolo', artifact: 'HELL' },
-  { id: 'UNDEAD', name: 'Robe de Sectário', artifact: 'UNDEAD' },
-  { id: 'AVALON', name: 'Robe da Pureza', artifact: 'AVALON' },
-  { id: 'FEY', name: 'Robe Feérico', artifact: 'FEY' },
+  { id: 'SET1', name: 'Hábito de Erudito', artifact: null },
+  { id: 'SET2', name: 'Hábito de Clérigo', artifact: null },
+  { id: 'SET3', name: 'Hábito de Mago', artifact: null },
+  { id: 'KEEPER', name: 'Hábito de Druida', artifact: 'KEEPER' },
+  { id: 'HELL', name: 'Hábito Malévolo', artifact: 'HELL' },
+  { id: 'UNDEAD', name: 'Hábito de Sectário', artifact: 'UNDEAD' },
+  { id: 'AVALON', name: 'Hábito da Pureza', artifact: 'AVALON' },
+  { id: 'FEY', name: 'Hábito Escama-feérica', artifact: 'FEY' },
 ];
 
 const PLATE_SHOE_TYPES = [
@@ -69,8 +69,8 @@ TIERS.forEach(tier => {
   ITEMS.push({ id: `${tier}_JOURNAL_MAGIC_FULL`, name: `Diário de Imbuidor ${tier} (Cheio)`, category: 'Diários', tier: tier as any, enchantment: '0' });
   ITEMS.push({ id: `${tier}_JOURNAL_WARRIOR_EMPTY`, name: `Diário de Ferreiro ${tier} (Vazio)`, category: 'Diários', tier: tier as any, enchantment: '0' });
   ITEMS.push({ id: `${tier}_JOURNAL_WARRIOR_FULL`, name: `Diário de Ferreiro ${tier} (Cheio)`, category: 'Diários', tier: tier as any, enchantment: '0' });
-  ITEMS.push({ id: `${tier}_JOURNAL_HUNTER_EMPTY`, name: `Diário de Caçador ${tier} (Vazio)`, category: 'Diários', tier: tier as any, enchantment: '0' });
-  ITEMS.push({ id: `${tier}_JOURNAL_HUNTER_FULL`, name: `Diário de Caçador ${tier} (Cheio)`, category: 'Diários', tier: tier as any, enchantment: '0' });
+  ITEMS.push({ id: `${tier}_JOURNAL_HUNTER_EMPTY`, name: `Diário de Flecheiro ${tier} (Vazio)`, category: 'Diários', tier: tier as any, enchantment: '0' });
+  ITEMS.push({ id: `${tier}_JOURNAL_HUNTER_FULL`, name: `Diário de Flecheiro ${tier} (Cheio)`, category: 'Diários', tier: tier as any, enchantment: '0' });
 });
 
 // Generate Artifacts
@@ -78,13 +78,13 @@ TIERS.forEach(tier => {
   ROBE_TYPES.forEach(robe => {
     if (robe.artifact) {
       const artifactId = `${tier}_ARTIFACT_ARMOR_CLOTH_${robe.artifact}`;
-      ITEMS.push({ id: artifactId, name: `Artefato ${robe.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+      ITEMS.push({ id: artifactId, name: `Artefato de ${robe.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
     }
   });
   PLATE_SHOE_TYPES.forEach(shoe => {
     if (shoe.artifact) {
       const artifactId = `${tier}_ARTIFACT_SHOES_PLATE_${shoe.artifact}`;
-      ITEMS.push({ id: artifactId, name: `Artefato ${shoe.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+      ITEMS.push({ id: artifactId, name: `Artefato de ${shoe.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
     }
   });
   SPEAR_TYPES.forEach(spear => {

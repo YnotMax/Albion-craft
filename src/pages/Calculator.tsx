@@ -106,6 +106,7 @@ export const Calculator: React.FC = () => {
 
   const recipe = RECIPES.find(r => r.itemId === selectedRecipeId);
   const item = ITEMS.find(i => i.id === selectedRecipeId);
+  const isFavorited = state.favorites.some(f => f.itemId === selectedRecipeId);
 
   // Calculate Focus Cost
   const focusCost = useMemo(() => {
@@ -236,8 +237,10 @@ export const Calculator: React.FC = () => {
       if (state.prices[fullId]) snapshotPrices[fullId] = { ...state.prices[fullId] };
     }
 
+    const existingFavorite = state.favorites.find(f => f.itemId === recipe.itemId);
+    
     addFavorite({
-      id: `${recipe.itemId}-${Date.now()}`,
+      id: existingFavorite ? existingFavorite.id : `${recipe.itemId}-${Date.now()}`,
       itemId: recipe.itemId,
       timestamp: Date.now(),
       group: selectedGroup,
@@ -354,14 +357,18 @@ export const Calculator: React.FC = () => {
           <div className="relative group/fav w-full sm:w-auto">
             <button 
               onClick={handleSaveFavorite}
-              className="w-full sm:w-auto bg-zinc-800 hover:bg-zinc-700 text-amber-500 font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 border border-zinc-700"
+              className={`w-full sm:w-auto font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 border ${
+                isFavorited 
+                  ? 'bg-amber-500/20 text-amber-500 border-amber-500/50 hover:bg-amber-500/30' 
+                  : 'bg-zinc-800 hover:bg-zinc-700 text-amber-500 border-zinc-700'
+              }`}
             >
-              <Star className="w-5 h-5" />
-              Favoritar
+              <Star className={`w-5 h-5 ${isFavorited ? 'fill-amber-500' : ''}`} />
+              {isFavorited ? 'Favoritado' : 'Favoritar'}
             </button>
             {/* Tooltip Favoritar */}
             <div className="absolute top-full right-0 mt-2 w-48 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/fav:opacity-100 group-hover/fav:visible transition-all z-50 pointer-events-none text-right">
-              Salva esta configuração no Dashboard para acompanhar o lucro em tempo real.
+              {isFavorited ? 'Atualizar as configurações deste item no Dashboard.' : 'Salva esta configuração no Dashboard para acompanhar o lucro em tempo real.'}
             </div>
           </div>
         </div>
@@ -418,7 +425,8 @@ export const Calculator: React.FC = () => {
                 >
                   {availableRecipes.map(r => {
                     const i = ITEMS.find(item => item.id === r.itemId);
-                    return <option key={r.itemId} value={r.itemId}>{i?.name}</option>;
+                    const isFav = state.favorites.some(f => f.itemId === r.itemId);
+                    return <option key={r.itemId} value={r.itemId}>{isFav ? '★ ' : ''}{i?.name}</option>;
                   })}
                 </select>
               </div>
