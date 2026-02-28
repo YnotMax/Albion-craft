@@ -36,12 +36,12 @@ const PLATE_SHOE_TYPES = [
 const SPEAR_TYPES = [
   { id: 'MAIN_SPEAR', name: 'Lança', artifact: null, resources: { planks: 8, bars: 8 } },
   { id: '2H_PIKE', name: 'Pique', artifact: null, resources: { planks: 12, bars: 8 } },
-  { id: '2H_GLAIVE', name: 'Glaive', artifact: null, resources: { planks: 12, bars: 8 } },
-  { id: 'MAIN_SPEAR_KEEPER', name: 'Lança de Garça', artifact: 'MAIN_SPEAR_KEEPER', resources: { planks: 8, bars: 8 } },
-  { id: '2H_SPEAR_MORGANA', name: 'Caçadora de Espíritos', artifact: '2H_SPEAR_MORGANA', resources: { planks: 12, bars: 8 } },
-  { id: '2H_TRINITYSPEAR', name: 'Lança da Trindade', artifact: '2H_TRINITYSPEAR', resources: { planks: 12, bars: 8 } },
-  { id: 'MAIN_SPEAR_AVALON', name: 'Quebradora do Dia', artifact: 'MAIN_SPEAR_AVALON', resources: { planks: 8, bars: 8 } },
-  { id: '2H_SPEAR_FEY', name: 'Lança da Alvorada', artifact: '2H_SPEAR_FEY', resources: { planks: 12, bars: 8 } },
+  { id: '2H_GLAIVE', name: 'Archa', artifact: null, resources: { planks: 12, bars: 8 } },
+  { id: 'MAIN_SPEAR_KEEPER', name: 'Lança Garceira', artifact: 'MAIN_SPEAR_KEEPER', resources: { planks: 8, bars: 8 } },
+  { id: '2H_SPEAR_MORGANA', name: 'Caça-espíritos', artifact: '2H_SPEAR_MORGANA', resources: { planks: 12, bars: 8 } },
+  { id: '2H_TRINITYSPEAR', name: 'Lança Trina', artifact: '2H_TRINITYSPEAR', resources: { planks: 12, bars: 8 } },
+  { id: 'MAIN_SPEAR_AVALON', name: 'Archa Fraturada', artifact: 'MAIN_SPEAR_AVALON', resources: { planks: 8, bars: 8 } },
+  { id: '2H_SPEAR_FEY', name: 'Alvorada', artifact: '2H_SPEAR_FEY', resources: { planks: 12, bars: 8 } },
 ];
 
 const TIER_FAME: Record<string, number> = {
