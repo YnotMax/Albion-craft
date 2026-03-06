@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Book, Calculator, Coins, LayoutDashboard, Settings, Bug, ChevronLeft, ChevronRight, Github, Linkedin, Instagram, ExternalLink } from 'lucide-react';
+import { Book, Calculator, Coins, LayoutDashboard, Settings, Bug, ChevronLeft, ChevronRight, Github, Linkedin, Instagram, ExternalLink, Info } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -17,6 +17,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
     { id: 'calculator', label: 'Calculadora', icon: Calculator },
     { id: 'journals', label: 'Diários', icon: Settings },
     { id: 'debug', label: 'Debug API', icon: Bug },
+    { id: 'about', label: 'Sobre o Projeto', icon: Info },
   ];
 
   return (

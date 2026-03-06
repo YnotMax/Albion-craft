@@ -12,6 +12,7 @@ import { Prices } from './pages/Prices';
 import { Calculator } from './pages/Calculator';
 import { Journals } from './pages/Journals';
 import { Debug } from './pages/Debug';
+import { About } from './pages/About';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -30,6 +31,8 @@ export default function App() {
         return <Journals />;
       case 'debug':
         return <Debug />;
+      case 'about':
+        return <About />;
       default:
         return <Dashboard />;
     }

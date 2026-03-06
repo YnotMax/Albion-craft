@@ -4,6 +4,8 @@ import { ITEMS, RECIPES } from '../constants';
 import { Trash2, TrendingUp, TrendingDown, Clock, Zap, Percent, RefreshCw, Info, Folder, Plus, X, BarChart3, ArrowUpDown } from 'lucide-react';
 import { CraftConfig } from '../types';
 
+import { calculateFocusCost } from '../utils/focus';
+
 export const Dashboard: React.FC = () => {
   const { state, removeFavorite, syncPrices, isSyncing, syncMessage, addGroup, removeGroup, updateFavoriteGroup } = useAppContext();
   const [activeGroup, setActiveGroup] = useState<string>(state.groups[0] || 'Geral');
@@ -72,7 +74,7 @@ export const Dashboard: React.FC = () => {
     const totalCost = totalMaterialCost + feeCost;
     const netProfit = netRevenue - totalCost + journalProfit;
     const roi = totalCost > 0 ? (netProfit / totalCost) * 100 : 0;
-    const focusCost = config.focusCost || 0;
+    const focusCost = calculateFocusCost(recipe, item, state.specs);
     const silverPerFocus = useFocus && focusCost > 0 ? netProfit / focusCost : 0;
 
     return {

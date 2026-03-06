@@ -6,6 +6,8 @@ import { MarketSelector } from '../components/MarketSelector';
 import { formatTimeAgo } from '../utils/format';
 import { Calculator as CalcIcon, Save, Star, TrendingUp, TrendingDown, Settings, CheckCircle2, RefreshCw, Clock, Info } from 'lucide-react';
 
+import { calculateFocusCost } from '../utils/focus';
+
 export const Calculator: React.FC = () => {
   const { state, updatePrice, addFavorite, syncPrices, isSyncing, syncMessage, addGroup, setCalculatorState } = useAppContext();
   
@@ -111,45 +113,7 @@ export const Calculator: React.FC = () => {
   // Calculate Focus Cost
   const focusCost = useMemo(() => {
     if (!recipe || !item) return 0;
-    
-    let baseNodeId = 'baseClothArmor';
-    let specNodeId = '';
-
-    if (item.category === 'Sapatos de Placa') {
-      baseNodeId = 'basePlateShoes';
-      specNodeId = 'PLATE_' + (item.id.split('_').pop()?.split('@')[0] || '');
-    } else if (item.category === 'Lanças') {
-      baseNodeId = 'baseSpear';
-      // For spears, the ID is T4_MAIN_SPEAR or T4_2H_PIKE
-      // We need to remove the tier (T4, T5, etc.) and the enchantment suffix (@1, @2, etc.)
-      specNodeId = item.id.replace(/^T\d_/, '').split('@')[0];
-    } else {
-      // Default to Cloth Armor
-      specNodeId = item.id.split('_').pop()?.split('@')[0] || '';
-    }
-
-    const baseLevel = state.specs[baseNodeId] || 0;
-    
-    // Base node gives +30 to all items in the tree
-    let totalFCE = baseLevel * 30;
-
-    // Add bonuses from all specific nodes in the same tree
-    SPEC_NODES.filter(n => n.baseNodeId === baseNodeId).forEach(node => {
-      const level = state.specs[node.id] || 0;
-      if (node.id === specNodeId) {
-        // The specific node for the item being crafted gives +250
-        totalFCE += level * 250;
-      } else {
-        // Other nodes give a cross-bonus (+30 for non-artifact, +15 for artifact)
-        const crossBonus = node.isArtifact ? 15 : 30;
-        totalFCE += level * crossBonus;
-      }
-    });
-    
-    // Focus cost halves every 10,000 FCE
-    const cost = recipe.baseFocusCost * Math.pow(0.5, totalFCE / 10000);
-    
-    return Math.round(cost);
+    return calculateFocusCost(recipe, item, state.specs);
   }, [recipe, item, state.specs]);
 
   // Calculate Costs and Profits
