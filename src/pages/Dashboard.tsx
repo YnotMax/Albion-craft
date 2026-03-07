@@ -25,7 +25,7 @@ export const Dashboard: React.FC = () => {
   const calculateFavoriteProfit = (fav: CraftConfig) => {
     const recipe = RECIPES.find(r => r.itemId === fav.itemId);
     const item = ITEMS.find(i => i.id === fav.itemId);
-    
+
     if (!recipe || !item) return null;
 
     // Handle old favorites that might not have configSnapshot yet
@@ -34,48 +34,49 @@ export const Dashboard: React.FC = () => {
       useFocus: (fav as any).useFocus || false,
       usageFee: (fav as any).usageFee || 0,
       focusCost: (fav as any).focusCost || 0,
+      quantity: (fav as any).quantity || 1,
       prices: {}
     };
 
-    const { rrr, useFocus, usageFee, prices } = config;
+    const { rrr, useFocus, usageFee, prices, quantity = 1 } = config;
     const currentRrr = rrr / 100;
-    
+
     let totalMaterialCost = 0;
     recipe.materials.forEach(mat => {
-      // Use current state prices for real-time tracking, fallback to snapshot if 0
       const currentPrice = state.prices[mat.itemId]?.buy;
       const price = currentPrice > 0 ? currentPrice : (prices[mat.itemId]?.buy || 0);
-      const effectiveAmount = mat.amount * (1 - currentRrr);
+      const effectiveAmount = mat.amount * quantity * (1 - currentRrr);
       totalMaterialCost += effectiveAmount * price;
     });
 
-    const feeCost = usageFee;
-    
+    const feeCost = usageFee * quantity;
+
     let journalProfit = 0;
     if (recipe.journalId) {
       const currentEmptyPrice = state.prices[recipe.journalId]?.buy;
       const emptyPrice = currentEmptyPrice > 0 ? currentEmptyPrice : (prices[recipe.journalId]?.buy || 0);
-      
+
       const fullId = recipe.journalId.replace('_EMPTY', '_FULL');
       const currentFullPrice = state.prices[fullId]?.sell;
       const fullPrice = currentFullPrice > 0 ? currentFullPrice : (prices[fullId]?.sell || 0);
-      
+
       const journalCapacity = recipe.fame * 10;
-      const journalsFilled = recipe.fame / journalCapacity;
+      const journalsFilled = (recipe.fame * quantity) / journalCapacity;
       journalProfit = journalsFilled * (fullPrice - emptyPrice);
     }
 
     const currentItemSellPrice = state.prices[item.id]?.sell;
     const itemSellPrice = currentItemSellPrice > 0 ? currentItemSellPrice : (prices[item.id]?.sell || 0);
-    const grossRevenue = itemSellPrice;
+    const grossRevenue = itemSellPrice * quantity;
     const taxCost = grossRevenue * 0.065; // 6.5% tax
     const netRevenue = grossRevenue - taxCost;
-    
+
     const totalCost = totalMaterialCost + feeCost;
     const netProfit = netRevenue - totalCost + journalProfit;
     const roi = totalCost > 0 ? (netProfit / totalCost) * 100 : 0;
-    const focusCost = calculateFocusCost(recipe, item, state.specs);
-    const silverPerFocus = useFocus && focusCost > 0 ? netProfit / focusCost : 0;
+    const unitFocusCost = calculateFocusCost(recipe, item, state.specs);
+    const totalFocusCost = unitFocusCost * quantity;
+    const silverPerFocus = useFocus && totalFocusCost > 0 ? netProfit / totalFocusCost : 0;
 
     return {
       id: fav.id,
@@ -86,8 +87,9 @@ export const Dashboard: React.FC = () => {
       revenue: netRevenue,
       cost: totalCost,
       roi,
-      focusCost,
+      focusCost: totalFocusCost,
       silverPerFocus,
+      quantity,
       timestamp: fav.timestamp || Date.now(),
       group: fav.group || 'Geral'
     };
@@ -111,11 +113,11 @@ export const Dashboard: React.FC = () => {
     const totalProfit = filteredFavorites.reduce((sum, f) => sum + f.netProfit, 0);
     const avgRoi = filteredFavorites.reduce((sum, f) => sum + f.roi, 0) / filteredFavorites.length;
     const profitableCount = filteredFavorites.filter(f => f.netProfit > 0).length;
-    
+
     // Find best items
     const bestProfitItem = [...filteredFavorites].sort((a, b) => b.netProfit - a.netProfit)[0];
     const bestRoiItem = [...filteredFavorites].sort((a, b) => b.roi - a.roi)[0];
-    
+
     return { totalProfit, avgRoi, profitableCount, bestProfitItem, bestRoiItem };
   }, [filteredFavorites]);
 
@@ -140,19 +142,19 @@ export const Dashboard: React.FC = () => {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-lg p-1">
-            <button 
+            <button
               onClick={() => setSortBy('profit')}
               className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${sortBy === 'profit' ? 'bg-amber-500 text-zinc-950 shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
             >
               Lucro
             </button>
-            <button 
+            <button
               onClick={() => setSortBy('roi')}
               className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${sortBy === 'roi' ? 'bg-amber-500 text-zinc-950 shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
             >
               ROI
             </button>
-            <button 
+            <button
               onClick={() => setSortBy('recent')}
               className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${sortBy === 'recent' ? 'bg-amber-500 text-zinc-950 shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
             >
@@ -168,11 +170,10 @@ export const Dashboard: React.FC = () => {
           <div key={group} className="relative group/tab">
             <button
               onClick={() => setActiveGroup(group)}
-              className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeGroup === group 
-                ? 'bg-amber-500/10 border-amber-500 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.1)]' 
+              className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all flex items-center gap-2 whitespace-nowrap ${activeGroup === group
+                ? 'bg-amber-500/10 border-amber-500 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.1)]'
                 : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700'
-              }`}
+                }`}
             >
               <Folder className={`w-4 h-4 ${activeGroup === group ? 'text-amber-500' : 'text-zinc-600'}`} />
               {group}
@@ -181,8 +182,8 @@ export const Dashboard: React.FC = () => {
               </span>
             </button>
             {group !== 'Geral' && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); removeGroup(group); if(activeGroup === group) setActiveGroup('Geral'); }}
+              <button
+                onClick={(e) => { e.stopPropagation(); removeGroup(group); if (activeGroup === group) setActiveGroup('Geral'); }}
                 className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/tab:opacity-100 transition-opacity shadow-lg"
               >
                 <X className="w-2.5 h-2.5" />
@@ -190,10 +191,10 @@ export const Dashboard: React.FC = () => {
             )}
           </div>
         ))}
-        
+
         {isAddingGroup ? (
           <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-1.5">
-            <input 
+            <input
               type="text"
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}
@@ -206,7 +207,7 @@ export const Dashboard: React.FC = () => {
             <button onClick={() => setIsAddingGroup(false)} className="text-red-500 hover:text-red-400"><X className="w-4 h-4" /></button>
           </div>
         ) : (
-          <button 
+          <button
             onClick={() => setIsAddingGroup(true)}
             className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-amber-500 hover:border-amber-500/50 transition-all"
             title="Adicionar Pasta"
@@ -260,7 +261,7 @@ export const Dashboard: React.FC = () => {
           {filteredFavorites.map(calc => {
             const isProfitable = calc.netProfit > 0;
             const margin = calc.roi;
-            
+
             let statusColor = 'bg-zinc-800 text-zinc-400';
             if (margin > 20) statusColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
             else if (margin > 0) statusColor = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
@@ -277,11 +278,14 @@ export const Dashboard: React.FC = () => {
             return (
               <div key={calc.id} className={`bg-zinc-900 border rounded-xl p-5 shadow-sm relative group overflow-hidden hover:border-zinc-700 transition-all ${isBestProfit || isBestRoi ? 'ring-1 ring-amber-500/30' : 'border-zinc-800'}`}>
                 <div className={`absolute top-0 left-0 w-1 h-full ${categoryAccent}`} />
-                
+
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-zinc-100">{calc.item.name}</h3>
+                      <h3 className="font-semibold text-zinc-100">
+                        {calc.item.name}
+                        <span className="text-zinc-500 ml-1 text-xs">({calc.quantity}x)</span>
+                      </h3>
                       {isBestProfit && <span className="text-[9px] bg-emerald-500 text-zinc-950 px-1.5 py-0.5 rounded font-bold uppercase">Melhor Lucro</span>}
                       {isBestRoi && <span className="text-[9px] bg-amber-500 text-zinc-950 px-1.5 py-0.5 rounded font-bold uppercase">Melhor ROI</span>}
                     </div>
@@ -297,14 +301,14 @@ export const Dashboard: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <select 
+                    <select
                       value={calc.group}
                       onChange={(e) => updateFavoriteGroup(calc.id, e.target.value)}
                       className="text-[10px] bg-zinc-800 border border-zinc-700 rounded px-1 py-0.5 text-zinc-400 focus:outline-none"
                     >
                       {state.groups.map(g => <option key={g} value={g}>{g}</option>)}
                     </select>
-                    <button 
+                    <button
                       onClick={() => removeFavorite(calc.id)}
                       className="text-zinc-600 hover:text-red-400 transition-colors p-1"
                     >
@@ -345,7 +349,7 @@ export const Dashboard: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="text-[10px] text-zinc-600 text-right mt-2 flex justify-between items-center">
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(calc.timestamp).toLocaleDateString()}</span>
                     <span>ID: {calc.id.split('-')[0]}</span>
