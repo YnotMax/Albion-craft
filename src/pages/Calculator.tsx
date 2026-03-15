@@ -13,7 +13,7 @@ export const Calculator: React.FC = () => {
   
   const categories = useMemo(() => {
     const cats = Array.from(new Set(RECIPES.map(r => ITEMS.find(i => i.id === r.itemId)?.category).filter(Boolean))) as string[];
-    return cats.sort();
+    return cats.sort((a, b) => a.localeCompare(b));
   }, []);
   
   // Load initial state from AppContext

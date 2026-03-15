@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { ITEMS } from '../constants';
 import { CurrencyInput } from '../components/CurrencyInput';
@@ -19,7 +19,10 @@ export const Prices: React.FC = () => {
     setDisplayLimit(24);
   }, [search, categoryFilter, tierFilter, enchantmentFilter]);
 
-  const categories = ['All', ...Array.from(new Set(ITEMS.map(i => i.category)))];
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(ITEMS.map(i => i.category)));
+    return ['All', ...cats.sort((a, b) => a.localeCompare(b))];
+  }, []);
   const tiers = ['All', 'T4', 'T5', 'T6', 'T7', 'T8'];
   const enchantments = ['All', '0', '1', '2', '3', '4'];
 

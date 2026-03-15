@@ -10,8 +10,6 @@ import { Dashboard } from './pages/Dashboard';
 import { Specs } from './pages/Specs';
 import { Prices } from './pages/Prices';
 import { Calculator } from './pages/Calculator';
-import { Journals } from './pages/Journals';
-import { Debug } from './pages/Debug';
 import { About } from './pages/About';
 
 export default function App() {

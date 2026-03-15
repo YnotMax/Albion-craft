@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Book, Calculator, Coins, LayoutDashboard, Settings, Bug, ChevronLeft, ChevronRight, Github, Linkedin, Instagram, ExternalLink, Info } from 'lucide-react';
+import { Book, Calculator, Coins, LayoutDashboard, Settings, ChevronLeft, ChevronRight, Github, Linkedin, Instagram, ExternalLink, Info } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
