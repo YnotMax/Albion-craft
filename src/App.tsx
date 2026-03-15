@@ -27,10 +27,6 @@ export default function App() {
         return <Prices />;
       case 'calculator':
         return <Calculator />;
-      case 'journals':
-        return <Journals />;
-      case 'debug':
-        return <Debug />;
       case 'about':
         return <About />;
       default:

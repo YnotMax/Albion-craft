@@ -2,50 +2,49 @@ import { Item, Recipe } from '../types';
 import { SPEC_NODES } from '../constants';
 
 export const calculateFocusCost = (recipe: Recipe, item: Item, specs: Record<string, number>): number => {
-  const categoryBaseNodeMap: Record<string, string> = {
-    'Armadura de Tecido': 'baseClothArmor',
-    'Sandálias de Tecido': 'baseClothShoes',
-    'Capuzes de Tecido': 'baseClothCowl', // Assuming this might be added later, fallback uses basic split
-    'Casacos de Couro': 'baseLeatherJacket',
-    'Sapatos de Couro': 'baseLeatherShoes',
-    'Capuzes de Couro': 'baseLeatherHood',
-    'Armaduras de Placas': 'basePlateArmor',
-    'Sapatos de Placa': 'basePlateShoes',
-    'Elmos de Placa': 'basePlateHelmet',
-    'Lanças': 'baseSpear',
-    'Espadas': 'baseSword',
-    'Arcos': 'baseBow',
-    'Adagas': 'baseDagger',
-    'Machados': 'baseAxe',
-    'Maças': 'baseMace',
-    'Martelos': 'baseHammer',
-    'Bordões': 'baseQuarterstaff',
-    'Bestas': 'baseCrossbow',
-    'Cajados de Fogo': 'baseFireStaff',
-    'Cajados Sagrados': 'baseHolyStaff',
-    'Cajados da Natureza': 'baseNatureStaff',
-    'Cajados de Gelo': 'baseFrostStaff',
-    'Cajados Amaldiçoados': 'baseCursedStaff',
-    'Escudos': 'baseShield',
-  };
+  let baseNodeId = 'baseClothArmor';
+  let specNodeId = '';
 
-  const baseNodeId = categoryBaseNodeMap[item.category] || 'baseClothArmor';
-
-  // Extract specific node ID. Example: 'T4_MAIN_SPEAR' -> 'MAIN_SPEAR', or 'T4_SHOES_PLATE_SET1' -> 'PLATE_SET1'
-  let specNodeId = item.id.replace(/^T\d_/, '').split('@')[0];
-
-  // Special exception for Plate Shoes as initially defined:
-  if (item.category === 'Sapatos de Placa' && focusCostPlateException(specNodeId)) {
+  if (item.category === 'Sapatos de Placa') {
+    baseNodeId = 'basePlateShoes';
     specNodeId = 'PLATE_' + (item.id.split('_').pop()?.split('@')[0] || '');
-  }
-
-  function focusCostPlateException(id: string) {
-    if (id.includes("SHOES_PLATE")) return true;
-    return false;
+  } else if (item.category === 'Capuzes de Tecido') {
+    baseNodeId = 'baseClothCowl';
+    specNodeId = 'COWL_' + (item.id.split('_').pop()?.split('@')[0] || '');
+  } else if (item.category === 'Casacos de Couro') {
+    baseNodeId = 'baseLeatherJacket';
+    specNodeId = 'JACKET_' + (item.id.split('_').pop()?.split('@')[0] || '');
+  } else if (item.category === 'Capuzes de Couro') {
+    baseNodeId = 'baseLeatherHood';
+    specNodeId = 'HOOD_' + (item.id.split('_').pop()?.split('@')[0] || '');
+  } else if (item.category === 'Armaduras de Placas') {
+    baseNodeId = 'basePlateArmor';
+    specNodeId = 'ARMOR_' + (item.id.split('_').pop()?.split('@')[0] || '');
+  } else if (item.category === 'Elmos de Placa') {
+    baseNodeId = 'basePlateHelmet';
+    specNodeId = 'HELMET_' + (item.id.split('_').pop()?.split('@')[0] || '');
+  } else if (item.category === 'Lanças') {
+    baseNodeId = 'baseSpear';
+    specNodeId = item.id.replace(/^T\d_/, '').split('@')[0];
+  } else if (item.category === 'Espadas') {
+    baseNodeId = 'baseSword';
+    specNodeId = item.id.replace(/^T\d_/, '').split('@')[0];
+  } else if (item.category === 'Arcos') {
+    baseNodeId = 'baseBow';
+    specNodeId = item.id.replace(/^T\d_/, '').split('@')[0];
+  } else if (item.category === 'Adagas') {
+    baseNodeId = 'baseDagger';
+    specNodeId = item.id.replace(/^T\d_/, '').split('@')[0];
+  } else if (item.category === 'Cajados Arcanos') {
+    baseNodeId = 'baseArcane';
+    specNodeId = item.id.replace(/^T\d_/, '').split('@')[0];
+  } else {
+    // Default to Cloth Armor
+    specNodeId = item.id.split('_').pop()?.split('@')[0] || '';
   }
 
   const baseLevel = specs[baseNodeId] || 0;
-
+  
   // Base node gives +30 to all items in the tree
   let totalFCE = baseLevel * 30;
 
@@ -61,9 +60,9 @@ export const calculateFocusCost = (recipe: Recipe, item: Item, specs: Record<str
       totalFCE += level * crossBonus;
     }
   });
-
+  
   // Focus cost halves every 10,000 FCE
   const cost = recipe.baseFocusCost * Math.pow(0.5, totalFCE / 10000);
-
+  
   return Math.round(cost);
 };

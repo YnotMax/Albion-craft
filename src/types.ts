@@ -41,7 +41,6 @@ export interface AppState {
     usageFee: number;
     rrr: number;
     useFocus: boolean;
-    quantity: number;
   };
 }
 
@@ -55,7 +54,6 @@ export interface CraftConfig {
     useFocus: boolean;
     usageFee: number;
     focusCost: number;
-    quantity: number;
     prices: Record<string, { buy: number; sell: number; updatedAt?: string }>; // Snapshot of prices at the time
   };
 }

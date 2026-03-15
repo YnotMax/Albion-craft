@@ -42,7 +42,6 @@ const defaultState: AppState = {
         rrr: 15.2,
         useFocus: false,
         focusCost: 0,
-        quantity: 1,
         prices: {}
       }
     },
@@ -55,7 +54,6 @@ const defaultState: AppState = {
         rrr: 24.8,
         useFocus: true,
         focusCost: 0,
-        quantity: 1,
         prices: {}
       }
     }
@@ -83,9 +81,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!parsed.buyCity) parsed.buyCity = 'Caerleon';
         if (!parsed.sellCity) parsed.sellCity = 'Caerleon';
         if (!parsed.groups) parsed.groups = ['Geral', 'Robes', 'Botas'];
-        if (parsed.calculatorState && parsed.calculatorState.quantity === undefined) {
-          parsed.calculatorState.quantity = 1;
-        }
         return parsed;
       } catch (e) {
         console.error('Failed to parse saved state', e);
@@ -171,7 +166,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!itemIds.length) return;
     setIsSyncing(true);
     setSyncMessage(`Iniciando sincronização de ${itemIds.length} itens...`);
-
+    
     const chunkSize = 50;
     const chunks = [];
     for (let i = 0; i < itemIds.length; i += chunkSize) {
@@ -186,24 +181,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
         setSyncMessage(`Buscando lote ${i + 1} de ${chunks.length}...`);
-
+        
         try {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
+          
           const serverPrefix = state.server === 'west' ? 'west' : state.server;
           // Fetch qualities 1 and 3 (Outstanding)
           const url = `https://${serverPrefix}.albion-online-data.com/api/v2/stats/prices/${chunk.join(',')}?locations=${state.buyCity},${state.sellCity}&qualities=1,3`;
-
+          
           const response = await fetch(url, { signal: controller.signal });
           clearTimeout(timeoutId);
-
+          
           if (!response.ok) {
             console.error(`HTTP Error: ${response.status}`);
             errorCount++;
             continue;
           }
-
+          
           const data = await response.json();
 
           // Group by item_id
@@ -225,20 +220,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const buyCityEntries = itemEntries.filter(e => e.city === state.buyCity);
             if (buyCityEntries.length > 0) {
               // Prefer quality 1 for buying materials, fallback to 3
-              let bestBuyEntry = buyCityEntries.find(e => e.quality === 1 && (e.buy_price_max > 0 || e.sell_price_min > 0))
-                || buyCityEntries.find(e => e.quality === 3 && (e.buy_price_max > 0 || e.sell_price_min > 0));
-
+              let bestBuyEntry = buyCityEntries.find(e => e.quality === 1 && (e.buy_price_max > 0 || e.sell_price_min > 0)) 
+                              || buyCityEntries.find(e => e.quality === 3 && (e.buy_price_max > 0 || e.sell_price_min > 0));
+              
               if (bestBuyEntry) {
                 const useBuyPrice = bestBuyEntry.buy_price_max > 0;
                 newBuy = useBuyPrice ? bestBuyEntry.buy_price_max : bestBuyEntry.sell_price_min;
-
+                
                 let dateStr = null;
                 if (useBuyPrice && bestBuyEntry.buy_price_max_date && !bestBuyEntry.buy_price_max_date.startsWith("0001-01-01")) {
                   dateStr = bestBuyEntry.buy_price_max_date + "Z";
                 } else if (!useBuyPrice && bestBuyEntry.sell_price_min_date && !bestBuyEntry.sell_price_min_date.startsWith("0001-01-01")) {
                   dateStr = bestBuyEntry.sell_price_min_date + "Z";
                 }
-
+                
                 if (dateStr) latestDate = dateStr;
                 changed = true;
               }
@@ -248,20 +243,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const sellCityEntries = itemEntries.filter(e => e.city === state.sellCity);
             if (sellCityEntries.length > 0) {
               // Prefer quality 3 for selling crafted items, fallback to 1
-              let bestSellEntry = sellCityEntries.find(e => e.quality === 3 && (e.sell_price_min > 0 || e.buy_price_max > 0))
-                || sellCityEntries.find(e => e.quality === 1 && (e.sell_price_min > 0 || e.buy_price_max > 0));
-
+              let bestSellEntry = sellCityEntries.find(e => e.quality === 3 && (e.sell_price_min > 0 || e.buy_price_max > 0)) 
+                               || sellCityEntries.find(e => e.quality === 1 && (e.sell_price_min > 0 || e.buy_price_max > 0));
+              
               if (bestSellEntry) {
                 const useSellPrice = bestSellEntry.sell_price_min > 0;
                 newSell = useSellPrice ? bestSellEntry.sell_price_min : bestSellEntry.buy_price_max;
-
+                
                 let dateStr = null;
                 if (useSellPrice && bestSellEntry.sell_price_min_date && !bestSellEntry.sell_price_min_date.startsWith("0001-01-01")) {
                   dateStr = bestSellEntry.sell_price_min_date + "Z";
                 } else if (!useSellPrice && bestSellEntry.buy_price_max_date && !bestSellEntry.buy_price_max_date.startsWith("0001-01-01")) {
                   dateStr = bestSellEntry.buy_price_max_date + "Z";
                 }
-
+                
                 if (dateStr) {
                   // If we already updated latestDate from buy, take the newer one
                   if (changed) {
@@ -296,7 +291,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (updatedCount > 0) {
         setState(prev => ({ ...prev, prices: newPrices }));
       }
-
+      
       if (errorCount > 0) {
         setSyncMessage(`Concluído com erros. ${updatedCount} preços atualizados.`);
       } else {
@@ -309,22 +304,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   return (
-    <AppContext.Provider value={{
-      state,
-      updateSpec,
-      updatePrice,
-      addFavorite,
-      removeFavorite,
+    <AppContext.Provider value={{ 
+      state, 
+      updateSpec, 
+      updatePrice, 
+      addFavorite, 
+      removeFavorite, 
       addGroup,
       removeGroup,
       updateFavoriteGroup,
-      setServer,
-      setBuyCity,
-      setSellCity,
+      setServer, 
+      setBuyCity, 
+      setSellCity, 
       setCalculatorState,
-      syncPrices,
-      isSyncing,
-      syncMessage
+      syncPrices, 
+      isSyncing, 
+      syncMessage 
     }}>
       {children}
     </AppContext.Provider>

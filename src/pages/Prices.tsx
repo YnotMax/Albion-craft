@@ -112,22 +112,30 @@ export const Prices: React.FC = () => {
             borderColor = 'border-amber-900/30';
             bgColor = 'bg-amber-950/10';
             accentColor = 'bg-amber-500';
-          } else if (item.category === 'Armadura de Tecido') {
+          } else if (item.category.includes('Tecido')) {
             borderColor = 'border-emerald-900/30';
             bgColor = 'bg-emerald-950/10';
             accentColor = 'bg-emerald-500';
-          } else if (item.category === 'Sapatos de Placa') {
+          } else if (item.category.includes('Couro')) {
+            borderColor = 'border-orange-900/30';
+            bgColor = 'bg-orange-950/10';
+            accentColor = 'bg-orange-500';
+          } else if (item.category.includes('Placa')) {
             borderColor = 'border-blue-900/30';
             bgColor = 'bg-blue-950/10';
             accentColor = 'bg-blue-500';
+          } else if (['Lanças', 'Espadas', 'Arcos', 'Adagas'].includes(item.category)) {
+            borderColor = 'border-red-900/30';
+            bgColor = 'bg-red-950/10';
+            accentColor = 'bg-red-500';
           } else if (item.category === 'Diários') {
             borderColor = 'border-purple-900/30';
             bgColor = 'bg-purple-950/10';
             accentColor = 'bg-purple-500';
           } else if (item.category === 'Artefatos') {
-            borderColor = 'border-red-900/30';
-            bgColor = 'bg-red-950/10';
-            accentColor = 'bg-red-500';
+            borderColor = 'border-zinc-700/30';
+            bgColor = 'bg-zinc-800/10';
+            accentColor = 'bg-zinc-400';
           }
 
           return (
@@ -140,8 +148,10 @@ export const Prices: React.FC = () => {
                   <div className="flex items-center gap-2 mt-1">
                     <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${
                       item.category === 'Recursos Refinados' ? 'bg-amber-500/20 text-amber-500' :
-                      item.category === 'Armadura de Tecido' ? 'bg-emerald-500/20 text-emerald-500' :
-                      item.category === 'Sapatos de Placa' ? 'bg-blue-500/20 text-blue-500' :
+                      item.category.includes('Tecido') ? 'bg-emerald-500/20 text-emerald-500' :
+                      item.category.includes('Couro') ? 'bg-orange-500/20 text-orange-500' :
+                      item.category.includes('Placa') ? 'bg-blue-500/20 text-blue-500' :
+                      ['Lanças', 'Espadas', 'Arcos', 'Adagas'].includes(item.category) ? 'bg-red-500/20 text-red-500' :
                       item.category === 'Diários' ? 'bg-purple-500/20 text-purple-500' :
                       'bg-zinc-800 text-zinc-400'
                     }`}>

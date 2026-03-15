@@ -62,10 +62,16 @@ export const Specs: React.FC = () => {
           let accentColor = 'bg-zinc-700';
           if (baseNode.id === 'baseClothArmor') accentColor = 'bg-emerald-500';
           else if (baseNode.id === 'basePlateShoes') accentColor = 'bg-blue-500';
+          else if (baseNode.id === 'baseClothCowl') accentColor = 'bg-emerald-400';
+          else if (baseNode.id === 'baseLeatherJacket') accentColor = 'bg-orange-500';
+          else if (baseNode.id === 'baseLeatherHood') accentColor = 'bg-orange-400';
+          else if (baseNode.id === 'basePlateArmor') accentColor = 'bg-blue-600';
+          else if (baseNode.id === 'basePlateHelmet') accentColor = 'bg-blue-400';
           else if (baseNode.id === 'baseSpear') accentColor = 'bg-amber-500';
           else if (baseNode.id === 'baseSword') accentColor = 'bg-red-500';
           else if (baseNode.id === 'baseBow') accentColor = 'bg-green-500';
           else if (baseNode.id === 'baseDagger') accentColor = 'bg-purple-500';
+          else if (baseNode.id === 'baseArcane') accentColor = 'bg-indigo-500';
 
           return (
             <div key={baseNode.id} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-sm relative">

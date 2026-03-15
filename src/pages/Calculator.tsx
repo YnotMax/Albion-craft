@@ -4,15 +4,18 @@ import { ITEMS, RECIPES, SPEC_NODES } from '../constants';
 import { CurrencyInput } from '../components/CurrencyInput';
 import { MarketSelector } from '../components/MarketSelector';
 import { formatTimeAgo } from '../utils/format';
-import { Calculator as CalcIcon, Save, Star, TrendingUp, TrendingDown, Settings, CheckCircle2, RefreshCw, Clock, Info } from 'lucide-react';
+import { Calculator as CalcIcon, Save, Star, TrendingUp, TrendingDown, Settings, CheckCircle2, RefreshCw, Clock, Info, AlertCircle } from 'lucide-react';
 
 import { calculateFocusCost } from '../utils/focus';
 
 export const Calculator: React.FC = () => {
   const { state, updatePrice, addFavorite, syncPrices, isSyncing, syncMessage, addGroup, setCalculatorState } = useAppContext();
-
-  const categories = useMemo(() => Array.from(new Set(RECIPES.map(r => ITEMS.find(i => i.id === r.itemId)?.category).filter(Boolean))) as string[], []);
-
+  
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(RECIPES.map(r => ITEMS.find(i => i.id === r.itemId)?.category).filter(Boolean))) as string[];
+    return cats.sort();
+  }, []);
+  
   // Load initial state from AppContext
   const initialCalcState = state.calculatorState || {
     selectedCategory: categories[0] || '',
@@ -24,15 +27,17 @@ export const Calculator: React.FC = () => {
     useFocus: false
   };
 
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialCalcState.selectedCategory);
-
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCalcState.selectedCategory || categories[0] || '');
+  
   const availableTiers = useMemo(() => {
+    if (!selectedCategory) return [];
     return Array.from(new Set(RECIPES.filter(r => ITEMS.find(i => i.id === r.itemId)?.category === selectedCategory).map(r => ITEMS.find(i => i.id === r.itemId)?.tier).filter(Boolean))).sort() as string[];
   }, [selectedCategory]);
-
+  
   const [selectedTier, setSelectedTier] = useState<string>(initialCalcState.selectedTier || availableTiers[0] || '');
 
   const availableEnchantments = useMemo(() => {
+    if (!selectedCategory || !selectedTier) return [];
     return Array.from(new Set(RECIPES.filter(r => {
       const item = ITEMS.find(i => i.id === r.itemId);
       return item?.category === selectedCategory && item?.tier === selectedTier;
@@ -42,6 +47,7 @@ export const Calculator: React.FC = () => {
   const [selectedEnchantment, setSelectedEnchantment] = useState<string>(initialCalcState.selectedEnchantment || availableEnchantments[0] || '');
 
   const availableRecipes = useMemo(() => {
+    if (!selectedCategory || !selectedTier || !selectedEnchantment) return [];
     return RECIPES.filter(r => {
       const item = ITEMS.find(i => i.id === r.itemId);
       return item?.category === selectedCategory && item?.tier === selectedTier && item?.enchantment === selectedEnchantment;
@@ -49,6 +55,12 @@ export const Calculator: React.FC = () => {
   }, [selectedCategory, selectedTier, selectedEnchantment]);
 
   const [selectedRecipeId, setSelectedRecipeId] = useState<string>(initialCalcState.selectedRecipeId || availableRecipes[0]?.itemId || '');
+
+  useEffect(() => {
+    if (categories.length > 0 && !categories.includes(selectedCategory)) {
+      setSelectedCategory(categories[0]);
+    }
+  }, [categories, selectedCategory]);
 
   useEffect(() => {
     if (availableTiers.length > 0 && !availableTiers.includes(selectedTier)) {
@@ -71,7 +83,6 @@ export const Calculator: React.FC = () => {
   const [usageFee, setUsageFee] = useState<number>(initialCalcState.usageFee);
   const [rrr, setRrr] = useState<number>(initialCalcState.rrr);
   const [useFocus, setUseFocus] = useState<boolean>(initialCalcState.useFocus);
-  const [quantity, setQuantity] = useState<number>(initialCalcState.quantity || 1);
 
   // Save state to AppContext on change
   useEffect(() => {
@@ -82,10 +93,9 @@ export const Calculator: React.FC = () => {
       selectedRecipeId,
       usageFee,
       rrr,
-      useFocus,
-      quantity
+      useFocus
     });
-  }, [selectedCategory, selectedTier, selectedEnchantment, selectedRecipeId, usageFee, rrr, useFocus, quantity]);
+  }, [selectedCategory, selectedTier, selectedEnchantment, selectedRecipeId, usageFee, rrr, useFocus]);
   const [marketTax, setMarketTax] = useState<number>(0.065); // 6.5% default
   const [showToast, setShowToast] = useState(false);
   const [rrrToast, setRrrToast] = useState<string | null>(null);
@@ -123,22 +133,21 @@ export const Calculator: React.FC = () => {
     if (!recipe || !item) return null;
 
     const currentRrr = rrr / 100;
-
+    
     let totalMaterialCost = 0;
     const materialsCostDetails = recipe.materials.map(mat => {
       const matItem = ITEMS.find(i => i.id === mat.itemId);
       const price = state.prices[mat.itemId]?.buy || 0;
-      // Effective amount considering RRR and quantity
-      const baseAmount = mat.amount * quantity;
-      const effectiveAmount = baseAmount * (1 - currentRrr);
+      // Effective amount considering RRR
+      const effectiveAmount = mat.amount * (1 - currentRrr);
       const cost = effectiveAmount * price;
       totalMaterialCost += cost;
-      return { ...mat, name: matItem?.name, price, effectiveAmount, cost, baseAmount };
+      return { ...mat, name: matItem?.name, price, effectiveAmount, cost };
     });
 
-    // Usage fee
-    const feeCost = usageFee * quantity;
-
+    // Usage fee is based on item value, but for MVP we'll just use a flat fee per item crafted
+    const feeCost = usageFee;
+    
     // Journal calculation
     let journalProfit = 0;
     let journalsFilled = 0;
@@ -146,24 +155,25 @@ export const Calculator: React.FC = () => {
       const emptyPrice = state.prices[recipe.journalId]?.buy || 0;
       const fullId = recipe.journalId.replace('_EMPTY', '_FULL');
       const fullPrice = state.prices[fullId]?.sell || 0;
-
-      const journalCapacity = recipe.fame * 10;
-      journalsFilled = (recipe.fame * quantity) / journalCapacity;
-
+      
+      // Journal capacity is exactly 10x the fame of a 16-resource item of that tier
+      // T4: 1800, T5: 3600, T6: 7200, T7: 14400, T8: 28800
+      const journalCapacity = recipe.fame * 10; 
+      journalsFilled = recipe.fame / journalCapacity; // This will always be 0.1 for robes, but keeps the formula dynamic
+      
       journalProfit = journalsFilled * (fullPrice - emptyPrice);
     }
 
     const itemSellPrice = state.prices[item.id]?.sell || 0;
-    const grossRevenue = itemSellPrice * quantity;
+    const grossRevenue = itemSellPrice;
     const taxCost = grossRevenue * marketTax;
     const netRevenue = grossRevenue - taxCost;
-
+    
     const totalCost = totalMaterialCost + feeCost;
     const grossProfit = grossRevenue - totalCost + journalProfit;
     const netProfit = netRevenue - totalCost + journalProfit;
-
-    const totalFocusCost = focusCost * quantity;
-    const silverPerFocus = useFocus && totalFocusCost > 0 ? netProfit / totalFocusCost : 0;
+    
+    const silverPerFocus = useFocus && focusCost > 0 ? netProfit / focusCost : 0;
     const roi = totalCost > 0 ? (netProfit / totalCost) * 100 : 0;
 
     return {
@@ -175,27 +185,27 @@ export const Calculator: React.FC = () => {
       grossRevenue,
       taxCost,
       totalCost,
+      grossProfit,
       netProfit,
       silverPerFocus,
       roi,
-      journalsFilled,
-      totalFocusCost
+      journalsFilled
     };
-  }, [recipe, item, rrr, useFocus, state.prices, usageFee, marketTax, focusCost, quantity]);
+  }, [recipe, item, rrr, useFocus, state.prices, usageFee, marketTax, focusCost]);
 
   const handleSaveFavorite = () => {
     if (!recipe) return;
-
+    
     const snapshotPrices: Record<string, { buy: number; sell: number }> = {};
-
+    
     // Save item price
     if (state.prices[recipe.itemId]) snapshotPrices[recipe.itemId] = { ...state.prices[recipe.itemId] };
-
+    
     // Save material prices
     recipe.materials.forEach(mat => {
       if (state.prices[mat.itemId]) snapshotPrices[mat.itemId] = { ...state.prices[mat.itemId] };
     });
-
+    
     // Save journal prices
     if (recipe.journalId) {
       const fullId = recipe.journalId.replace('_EMPTY', '_FULL');
@@ -204,7 +214,7 @@ export const Calculator: React.FC = () => {
     }
 
     const existingFavorite = state.favorites.find(f => f.itemId === recipe.itemId);
-
+    
     addFavorite({
       id: existingFavorite ? existingFavorite.id : `${recipe.itemId}-${Date.now()}`,
       itemId: recipe.itemId,
@@ -215,11 +225,10 @@ export const Calculator: React.FC = () => {
         rrr,
         useFocus,
         focusCost,
-        quantity,
         prices: snapshotPrices
       }
     });
-
+    
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
   };
@@ -243,24 +252,32 @@ export const Calculator: React.FC = () => {
     }
   };
 
-  const [resourceInventory, setResourceInventory] = useState<Record<string, number>>({});
+  if (categories.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <RefreshCw className="w-8 h-8 text-amber-500 animate-spin" />
+        <p className="text-zinc-400">Carregando dados do sistema...</p>
+      </div>
+    );
+  }
 
-  const maxCraftable = useMemo(() => {
-    if (!recipe) return 0;
-    let minItems = Infinity;
-    recipe.materials.forEach(mat => {
-      const available = resourceInventory[mat.itemId] || 0;
-      if (available === 0) {
-        minItems = 0;
-      } else {
-        const canCraft = Math.floor(available / mat.amount);
-        minItems = Math.min(minItems, canCraft);
-      }
-    });
-    return minItems === Infinity ? 0 : minItems;
-  }, [recipe, resourceInventory]);
-
-  if (!recipe || !calculations) return <div>Carregando...</div>;
+  if (!recipe || !calculations) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <AlertCircle className="w-8 h-8 text-amber-500" />
+        <p className="text-zinc-400">Selecione um item para começar os cálculos.</p>
+        <div className="flex gap-3">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="bg-zinc-900 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-100"
+          >
+            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 relative">
@@ -302,8 +319,8 @@ export const Calculator: React.FC = () => {
             <label className="text-[10px] text-zinc-500 uppercase font-bold">Pasta:</label>
             {isAddingGroup ? (
               <div className="flex items-center gap-1">
-                <input
-                  type="text"
+                <input 
+                  type="text" 
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
                   className="bg-zinc-950 border border-zinc-600 rounded px-2 py-0.5 text-xs text-zinc-100 w-24 focus:outline-none focus:border-amber-500"
@@ -316,14 +333,14 @@ export const Calculator: React.FC = () => {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <select
+                <select 
                   value={selectedGroup}
                   onChange={(e) => setSelectedGroup(e.target.value)}
                   className="bg-transparent text-xs text-zinc-100 font-semibold focus:outline-none cursor-pointer"
                 >
                   {state.groups.map(g => <option key={g} value={g} className="bg-zinc-900">{g}</option>)}
                 </select>
-                <button
+                <button 
                   onClick={() => setIsAddingGroup(true)}
                   className="text-zinc-500 hover:text-amber-500 transition-colors"
                   title="Nova Pasta"
@@ -339,12 +356,13 @@ export const Calculator: React.FC = () => {
           </div>
           <MarketSelector />
           <div className="relative group/fav w-full sm:w-auto">
-            <button
+            <button 
               onClick={handleSaveFavorite}
-              className={`w-full sm:w-auto font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 border ${isFavorited
-                ? 'bg-amber-500/20 text-amber-500 border-amber-500/50 hover:bg-amber-500/30'
-                : 'bg-zinc-800 hover:bg-zinc-700 text-amber-500 border-zinc-700'
-                }`}
+              className={`w-full sm:w-auto font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 border ${
+                isFavorited 
+                  ? 'bg-amber-500/20 text-amber-500 border-amber-500/50 hover:bg-amber-500/30' 
+                  : 'bg-zinc-800 hover:bg-zinc-700 text-amber-500 border-zinc-700'
+              }`}
             >
               <Star className={`w-5 h-5 ${isFavorited ? 'fill-amber-500' : ''}`} />
               {isFavorited ? 'Favoritado' : 'Favoritar'}
@@ -365,7 +383,7 @@ export const Calculator: React.FC = () => {
               <Settings className="w-5 h-5 text-zinc-400" />
               Configurações
             </h3>
-
+            
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
@@ -399,31 +417,19 @@ export const Calculator: React.FC = () => {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div className="md:col-span-1">
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Quantidade</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-100 focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-                <div className="md:col-span-3">
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Item para Craftar</label>
-                  <select
-                    value={selectedRecipeId}
-                    onChange={(e) => setSelectedRecipeId(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-100 focus:outline-none focus:border-amber-500"
-                  >
-                    {availableRecipes.map(r => {
-                      const i = ITEMS.find(item => item.id === r.itemId);
-                      const isFav = state.favorites.some(f => f.itemId === r.itemId);
-                      return <option key={r.itemId} value={r.itemId}>{isFav ? '★ ' : ''}{i?.name}</option>;
-                    })}
-                  </select>
-                </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Item para Craftar</label>
+                <select
+                  value={selectedRecipeId}
+                  onChange={(e) => setSelectedRecipeId(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-100 focus:outline-none focus:border-amber-500"
+                >
+                  {availableRecipes.map(r => {
+                    const i = ITEMS.find(item => item.id === r.itemId);
+                    const isFav = state.favorites.some(f => f.itemId === r.itemId);
+                    return <option key={r.itemId} value={r.itemId}>{isFav ? '★ ' : ''}{i?.name}</option>;
+                  })}
+                </select>
               </div>
 
               <div>
@@ -452,8 +458,8 @@ export const Calculator: React.FC = () => {
                 <div className="flex flex-wrap gap-2 mt-3">
                   {rrrPresets.map(preset => (
                     <div key={preset.value} className="relative group">
-                      <button
-                        onClick={() => handleRrrClick(preset)}
+                      <button 
+                        onClick={() => handleRrrClick(preset)} 
                         className={`text-[11px] font-medium bg-zinc-800 hover:bg-zinc-700 ${preset.color} px-2.5 py-1.5 rounded-md border border-zinc-700 transition-colors`}
                       >
                         {preset.label}
@@ -485,7 +491,7 @@ export const Calculator: React.FC = () => {
                     Usar Foco
                     <Info className="w-3 h-3 text-zinc-600" />
                   </span>
-                  <span className="text-xs text-zinc-500">Custo: {calculations.totalFocusCost} foco</span>
+                  <span className="text-xs text-zinc-500">Custo: {focusCost} foco</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={useFocus} onChange={(e) => setUseFocus(e.target.checked)} />
@@ -514,13 +520,13 @@ export const Calculator: React.FC = () => {
                 Sincronizar
               </button>
             </div>
-
+            
             <div className="space-y-4">
               {/* Item Final */}
               <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-800">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-amber-500">{item?.name}</span>
-                  <span className="text-xs text-zinc-500 flex items-center gap-1"><Clock className="w-3 h-3" /> {formatTimeAgo(state.prices[recipe.itemId]?.updatedAt)}</span>
+                  <span className="text-xs text-zinc-500 flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTimeAgo(state.prices[recipe.itemId]?.updatedAt)}</span>
                 </div>
                 <CurrencyInput
                   label="Preço de Venda"
@@ -537,7 +543,7 @@ export const Calculator: React.FC = () => {
                   <div key={mat.itemId} className="p-3 bg-zinc-950 rounded-lg border border-zinc-800">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium text-zinc-300">{matItem?.name}</span>
-                      <span className="text-xs text-zinc-500 flex items-center gap-1"><Clock className="w-3 h-3" /> {formatTimeAgo(state.prices[mat.itemId]?.updatedAt)}</span>
+                      <span className="text-xs text-zinc-500 flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTimeAgo(state.prices[mat.itemId]?.updatedAt)}</span>
                     </div>
                     <CurrencyInput
                       label="Preço de Compra"
@@ -554,7 +560,7 @@ export const Calculator: React.FC = () => {
                 <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-800 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-zinc-300">Diários</span>
-                    <span className="text-xs text-zinc-500 flex items-center gap-1"><Clock className="w-3 h-3" /> {formatTimeAgo(state.prices[recipe.journalId]?.updatedAt)}</span>
+                    <span className="text-xs text-zinc-500 flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTimeAgo(state.prices[recipe.journalId]?.updatedAt)}</span>
                   </div>
                   <CurrencyInput
                     label="Comprar Vazio"
@@ -579,7 +585,7 @@ export const Calculator: React.FC = () => {
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
             <h3 className="text-xl font-bold text-zinc-100 mb-6 flex items-center gap-2">
               <CalcIcon className="w-6 h-6 text-emerald-500" />
-              Resultados do Craft ({quantity}x)
+              Resultados do Craft (1x)
             </h3>
 
             <div className="grid grid-cols-2 gap-4 mb-8">
@@ -602,7 +608,7 @@ export const Calculator: React.FC = () => {
                       </span>
                     </div>
                   </div>
-
+                  
                   <div className="flex gap-6 text-right">
                     <div className="group/roi relative">
                       <span className="text-xs text-zinc-400 uppercase font-semibold tracking-wider block mb-1 flex items-center gap-1 justify-end">
@@ -635,30 +641,9 @@ export const Calculator: React.FC = () => {
               </div>
             </div>
 
-            <div className="mb-6">
-              <h4 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <Save className="w-4 h-4 text-amber-500" />
-                Lista de Compras de Recursos
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {calculations.materialsCostDetails.map(mat => (
-                  <div key={mat.itemId} className="bg-zinc-950 p-3 rounded-lg border border-zinc-800 flex justify-between items-center">
-                    <div>
-                      <div className="text-sm font-medium text-zinc-100">{mat.name}</div>
-                      <div className="text-[10px] text-zinc-500 uppercase font-bold">Total: {Math.round(mat.baseAmount)} un</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs font-mono text-zinc-300">{Math.round(mat.cost).toLocaleString()} Prata</div>
-                      <div className="text-[10px] text-zinc-500">c/ {Math.round(rrr)}% RRR</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider mb-2">Detalhamento</h4>
-
+              
               {calculations.journalsFilled > 0 && (
                 <div className="flex justify-between text-sm py-2 border-b border-zinc-800/50 bg-zinc-950/50 px-3 rounded-lg mb-4">
                   <span className="text-zinc-300 font-medium">Diários Preenchidos</span>
@@ -670,7 +655,7 @@ export const Calculator: React.FC = () => {
                 <span className="text-zinc-400">Materiais (c/ {Math.round(calculations.rrr * 100)}% RRR)</span>
                 <span className="font-mono text-red-400">-{Math.round(calculations.totalMaterialCost).toLocaleString()}</span>
               </div>
-
+              
               <div className="flex justify-between text-sm py-2 border-b border-zinc-800/50">
                 <span className="text-zinc-400">Taxa da Estação</span>
                 <span className="font-mono text-red-400">-{Math.round(calculations.feeCost).toLocaleString()}</span>
@@ -688,55 +673,6 @@ export const Calculator: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Cálculo Inverso */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm mt-6">
-            <h3 className="text-lg font-bold text-zinc-100 mb-4 flex items-center gap-2">
-              <RefreshCw className="w-5 h-5 text-amber-500" />
-              Cálculo Inverso (Provisão)
-            </h3>
-            <p className="text-xs text-zinc-400 mb-4">
-              Informe quantos recursos você já possui para saber quantos itens pode fabricar.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {recipe.materials.map(mat => {
-                const matItem = ITEMS.find(i => i.id === mat.itemId);
-                return (
-                  <div key={mat.itemId}>
-                    <label className="text-[10px] font-semibold text-zinc-500 uppercase mb-1 block">{matItem?.name}</label>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="Qtd. disponível..."
-                      value={resourceInventory[mat.itemId] || ''}
-                      onChange={(e) => setResourceInventory(prev => ({ ...prev, [mat.itemId]: parseInt(e.target.value) || 0 }))}
-                      className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-1.5 px-3 text-sm text-zinc-100 focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-
-            {maxCraftable > 0 ? (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-center justify-between">
-                <div>
-                  <span className="text-xs text-amber-500 uppercase font-bold block">Você pode fabricar:</span>
-                  <span className="text-2xl font-bold text-amber-400">{maxCraftable} {item?.name}s</span>
-                </div>
-                <button
-                  onClick={() => setQuantity(maxCraftable)}
-                  className="bg-amber-500 hover:bg-amber-600 text-zinc-900 text-xs font-bold py-2 px-4 rounded-lg transition-colors"
-                >
-                  Usar esta Qtd.
-                </button>
-              </div>
-            ) : (
-              <div className="text-center py-4 text-zinc-500 text-sm border border-zinc-800 border-dashed rounded-lg">
-                Insira a quantidade de recursos para calcular.
-              </div>
-            )}
           </div>
         </div>
       </div>
