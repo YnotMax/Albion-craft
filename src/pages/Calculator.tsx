@@ -304,21 +304,76 @@ export const Calculator: React.FC = () => {
         </div>
       )}
 
-      {/* Hero Title */}
+      {/* Hero Title & Actions */}
       <div className="flex flex-col gap-1">
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
           <div>
             <h3 className="text-2xl md:text-3xl font-bold tight-tracking text-on-surface">Calculadora de Craft</h3>
-            <p className="text-on-surface-variant text-sm">Simule lucros e otimize o uso do seu foco em tempo real.</p>
+            <p className="text-on-surface-variant text-sm mt-1">Simule lucros e otimize o uso do seu foco em tempo real.</p>
           </div>
-          <button 
-             onClick={handleSyncRecipePrices}
-             disabled={isSyncing}
-             className="hidden md:flex items-center gap-2 bg-surface-container-high px-4 py-2 rounded-lg text-sm font-semibold border border-outline-variant/20 hover:border-primary/50 transition-colors disabled:opacity-50"
-          >
-             <span className={`material-symbols-outlined text-sm ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
-             Atualizar Preços
-          </button>
+          
+          {/* Action Bar */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3 w-full xl:w-auto">
+            {/* Save Favorite Group */}
+            <div className="flex flex-1 sm:flex-none items-center gap-2 bg-surface-container-low border border-outline-variant/10 p-1.5 rounded-lg justify-between sm:justify-start">
+              <div className="flex items-center flex-1 sm:flex-none">
+                <select
+                  value={selectedGroup}
+                  onChange={(e) => {
+                    if (e.target.value === 'novo') {
+                      setIsAddingGroup(true);
+                    } else {
+                      setSelectedGroup(e.target.value);
+                      setIsAddingGroup(false);
+                    }
+                  }}
+                  className="bg-transparent border-none outline-none text-xs font-semibold text-on-surface focus:ring-1 focus:ring-secondary py-1 pl-2 w-28 md:w-32 truncate"
+                >
+                  {state.groups.map(g => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
+                  <option value="novo" className="font-bold text-primary">+ Novo Grupo</option>
+                </select>
+                
+                {isAddingGroup && (
+                  <div className="flex items-center gap-1 bg-surface-container-highest px-2 py-0.5 rounded-md ml-2 flex-1 sm:flex-none">
+                    <input
+                      type="text"
+                      value={newGroupName}
+                      onChange={(e) => setNewGroupName(e.target.value)}
+                      placeholder="Nome..."
+                      className="w-20 md:w-24 bg-transparent outline-none border-none py-1 text-xs text-on-surface"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAddGroup();
+                        if (e.key === 'Escape') setIsAddingGroup(false);
+                      }}
+                    />
+                    <button onClick={handleAddGroup} className="text-primary hover:bg-primary/10 rounded p-1 transition-colors flex items-center justify-center">
+                       <span className="material-symbols-outlined text-[14px]">add</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button 
+                onClick={handleSaveFavorite}
+                className="cta-gradient px-4 py-1.5 rounded-md font-bold text-on-primary text-xs tracking-wide shadow-sm shadow-primary/20 flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity whitespace-nowrap"
+              >
+                <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                Salvar Favorito
+              </button>
+            </div>
+
+            <button 
+               onClick={handleSyncRecipePrices}
+               disabled={isSyncing}
+               className="flex items-center justify-center gap-2 bg-surface-container-high px-4 py-2.5 rounded-lg text-sm font-semibold border border-outline-variant/20 hover:border-primary/50 transition-colors disabled:opacity-50"
+            >
+               <span className={`material-symbols-outlined text-sm ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
+               <span className="sm:hidden xl:block">Atualizar Preços</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -540,7 +595,7 @@ export const Calculator: React.FC = () => {
                           <CurrencyInput
                             value={mat.price}
                             onChange={(newValue) => updatePrice(mat.itemId, 'buy', newValue)}
-                            className="bg-transparent border-b border-outline-variant/30 text-sm font-semibold max-w-[80px] sm:max-w-[100px] text-on-surface focus:outline-none focus:border-secondary transition-colors px-1 text-left sm:text-right"
+                            className="bg-transparent border-b border-outline-variant/30 text-sm font-semibold w-[100px] sm:w-[140px] text-on-surface focus:outline-none focus:border-secondary transition-colors px-1 text-left sm:text-right"
                           />
                         </div>
                         <div className="text-right w-24">
@@ -569,15 +624,15 @@ export const Calculator: React.FC = () => {
                           <CurrencyInput
                             value={state.prices[recipe.journalId]?.buy || 0}
                             onChange={(newValue) => updatePrice(recipe.journalId, 'buy', newValue)}
-                            className="bg-transparent border-b border-outline-variant/30 text-sm font-semibold max-w-[80px] text-amber-500 focus:outline-none focus:border-amber-400 transition-colors px-1 text-left sm:text-right"
+                            className="bg-transparent border-b border-outline-variant/30 text-sm font-semibold w-[100px] sm:w-[130px] text-amber-500 focus:outline-none focus:border-amber-400 transition-colors px-1 text-left sm:text-right"
                           />
                         </div>
-                        <div className="text-left sm:text-right">
+                        <div className="text-left sm:text-right w-[100px] sm:w-[130px]">
                           <p className="text-[10px] text-on-surface-variant uppercase font-bold mb-1">Valor Cheio</p>
                           <CurrencyInput
                              value={state.prices[recipe.journalId.replace('_EMPTY', '_FULL')]?.sell || 0}
                              onChange={(newValue) => updatePrice(recipe.journalId.replace('_EMPTY', '_FULL'), 'sell', newValue)}
-                             className="bg-transparent border-b border-outline-variant/30 text-sm font-semibold max-w-[80px] text-primary focus:outline-none focus:border-primary transition-colors px-1 text-left sm:text-right"
+                             className="bg-transparent border-b border-outline-variant/30 text-sm font-semibold w-full text-primary focus:outline-none focus:border-primary transition-colors px-1 text-left sm:text-right"
                            />
                         </div>
                       </div>
@@ -617,14 +672,15 @@ export const Calculator: React.FC = () => {
                               // Check all inputs to find limiting factor
                               let limit = Infinity;
                               recipe.materials.forEach((m, i) => {
-                                const inputEl = document.querySelectorAll('input[placeholder="Ex: 500"]')[i];
+                                const inputEl = document.querySelectorAll('input[placeholder="Ex: 500"]')[i] as HTMLInputElement;
                                 if (inputEl) {
                                   const val = parseInt(inputEl.value) || 0;
                                   const req = m.amount * (1 - calculations.rrr);
                                   limit = Math.min(limit, Math.floor(val / req));
                                 }
                               });
-                              if (topResultEl && limit !== Infinity) topResultEl.innerText = `${limit}`;
+                              const topElement = document.getElementById('inverse-result-top');
+                              if (topElement && limit !== Infinity) topElement.innerText = `${limit}`;
                             }}
                           />
                           <p id={`inverse-result-${idx}`} className="text-[10px] text-tertiary font-bold ml-1 mt-1 block"></p>
@@ -708,54 +764,8 @@ export const Calculator: React.FC = () => {
                         className="w-full bg-surface-container-highest border border-outline-variant/20 rounded-lg py-2.5 px-4 text-sm font-bold text-on-surface outline-none focus:border-secondary transition-colors text-right"
                       />
                   </div>
-                  <button 
-                    onClick={handleSaveFavorite}
-                    className="w-full cta-gradient py-3 mt-2 rounded-lg font-bold text-on-primary text-sm shadow-lg shadow-primary/20 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                  >
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    SALVAR FAVORITO
-                  </button>
-
-                  <div className="flex gap-2">
-                    <select
-                      value={selectedGroup}
-                      onChange={(e) => {
-                        if (e.target.value === 'novo') {
-                          setIsAddingGroup(true);
-                        } else {
-                          setSelectedGroup(e.target.value);
-                          setIsAddingGroup(false);
-                        }
-                      }}
-                      className="flex-1 bg-surface-container-lowest border-none outline-none rounded-lg py-2 px-3 text-xs text-on-surface mt-2 focus:ring-1 focus:ring-secondary"
-                    >
-                      {state.groups.map(g => (
-                        <option key={g} value={g}>{g}</option>
-                      ))}
-                      <option value="novo" className="font-bold text-primary">+ Novo Grupo</option>
-                    </select>
-
-                    {isAddingGroup && (
-                      <div className="flex flex-1 items-center gap-1 mt-2">
-                        <input
-                          type="text"
-                          value={newGroupName}
-                          onChange={(e) => setNewGroupName(e.target.value)}
-                          placeholder="Nome..."
-                          className="w-full bg-surface-container-lowest outline-none border-none rounded-lg py-2 px-2 text-xs text-on-surface focus:ring-1 focus:ring-secondary"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleAddGroup();
-                            if (e.key === 'Escape') setIsAddingGroup(false);
-                          }}
-                        />
-                        <button onClick={handleAddGroup} className="bg-primary hover:bg-primary-container text-on-primary p-2 rounded-lg transition-colors flex items-center justify-center">
-                           <span className="material-symbols-outlined text-[16px]">add</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
                 </div>
+                
               </div>
               
               {/* Quick Prices Component Equivalent */}
