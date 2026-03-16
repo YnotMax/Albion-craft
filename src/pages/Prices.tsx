@@ -7,7 +7,7 @@ import { formatTimeAgo } from '../utils/format';
 import { Search, Filter, RefreshCw, Clock, Info } from 'lucide-react';
 
 export const Prices: React.FC = () => {
-  const { state, updatePrice, syncPrices, isSyncing, syncMessage } = useAppContext();
+  const { state, updatePrice, syncPrices, isSyncing, syncMessage, setBuyCity, setSellCity } = useAppContext();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [tierFilter, setTierFilter] = useState('All');
@@ -56,7 +56,16 @@ export const Prices: React.FC = () => {
           <p className="text-zinc-400 mt-1">Gerencie os preços de compra e venda dos itens.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-4">
-          <MarketSelector />
+          <MarketSelector 
+            label="Cidade de Compra" 
+            value={state.buyCity} 
+            onChange={setBuyCity} 
+          />
+          <MarketSelector 
+            label="Cidade de Venda" 
+            value={state.sellCity} 
+            onChange={setSellCity} 
+          />
         </div>
       </div>
 

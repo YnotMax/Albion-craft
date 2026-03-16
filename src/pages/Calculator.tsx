@@ -626,32 +626,25 @@ const InverseCalculationBlock: React.FC<{
             </div>
 
             <div className="space-y-3 pt-2">
-              <label className="text-[11px] font-bold text-on-surface-variant uppercase">Return Rate (RRR%)</label>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                {rrrPresets.slice(0, 3).map((preset) => (
-                  <button
-                    key={preset.value}
-                    onClick={() => handleRrrClick(preset)}
-                    className={`text-[10px] py-1.5 rounded border transition-all truncate px-1 ${
-                      rrr === preset.value
-                        ? 'bg-primary/10 border-primary/50 text-primary'
-                        : 'bg-surface-container-high border-outline-variant/30 hover:border-primary/30 text-on-surface-variant'
-                    }`}
-                    title={preset.desc}
-                  >
-                    {preset.value}%
-                  </button>
-                ))}
+              <div className="flex justify-between items-center">
+                <label className="text-[11px] font-bold text-on-surface-variant uppercase">Taxa de Retorno (RRR)</label>
+                <span className="text-xs font-black text-primary">{rrr}%</span>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
+              <div className="space-y-3">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="50" 
                   step="0.1"
                   value={rrr}
-                  onChange={(e) => setRrr(Number(e.target.value) || 0)}
-                  className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2.5 px-4 focus:ring-1 focus:ring-secondary text-on-surface outline-none"
+                  onChange={(e) => setRrr(Number(e.target.value))}
+                  className="w-full accent-primary h-1.5 bg-surface-container-lowest rounded-lg appearance-none cursor-pointer"
                 />
-                <span className="text-on-surface-variant font-bold text-sm">%</span>
+                <div className="flex justify-between text-[9px] text-on-surface-variant font-bold uppercase tracking-tighter px-1">
+                  <button onClick={() => setRrr(0)} className="hover:text-primary transition-colors">0%</button>
+                  <button onClick={() => setRrr(15.2)} className="hover:text-primary transition-colors">15.2% (Cidade)</button>
+                  <button onClick={() => setRrr(47.9)} className="hover:text-primary transition-colors">47.9% (Foco)</button>
+                </div>
               </div>
             </div>
 

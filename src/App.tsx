@@ -10,6 +10,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Specs } from './pages/Specs';
 import { Prices } from './pages/Prices';
 import { Calculator } from './pages/Calculator';
+import { MarketAnalysis } from './pages/MarketAnalysis';
 import { About } from './pages/About';
 
 export default function App() {
@@ -19,6 +20,8 @@ export default function App() {
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard />;
+      case 'market':
+        return <MarketAnalysis />;
       case 'specs':
         return <Specs />;
       case 'prices':
