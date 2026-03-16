@@ -12,14 +12,14 @@ const METAL_BAR_FAME: Record<string, number> = {
 };
 
 const ROBE_TYPES = [
-  { id: 'SET1', name: 'Hábito de Erudito', artifact: null },
-  { id: 'SET2', name: 'Hábito de Clérigo', artifact: null },
-  { id: 'SET3', name: 'Hábito de Mago', artifact: null },
-  { id: 'KEEPER', name: 'Hábito de Druida', artifact: 'KEEPER' },
-  { id: 'HELL', name: 'Hábito Malévolo', artifact: 'HELL' },
-  { id: 'UNDEAD', name: 'Hábito de Sectário', artifact: 'UNDEAD' },
-  { id: 'AVALON', name: 'Hábito da Pureza', artifact: 'AVALON' },
-  { id: 'FEY', name: 'Hábito Escama-feérica', artifact: 'FEY' },
+  { id: 'SET1', name: 'Robe de Erudito', artifact: null },
+  { id: 'SET2', name: 'Robe de Clérigo', artifact: null },
+  { id: 'SET3', name: 'Robe de Mago', artifact: null },
+  { id: 'KEEPER', name: 'Robe de Druida', artifact: 'KEEPER' },
+  { id: 'HELL', name: 'Robe Malévolo', artifact: 'HELL' },
+  { id: 'UNDEAD', name: 'Robe de Sectário', artifact: 'UNDEAD' },
+  { id: 'AVALON', name: 'Robe da Pureza', artifact: 'AVALON' },
+  { id: 'FEY', name: 'Robe Escama-feérica', artifact: 'FEY' },
 ];
 
 const CLOTH_COWL_TYPES = [
@@ -31,6 +31,17 @@ const CLOTH_COWL_TYPES = [
   { id: 'UNDEAD', name: 'Capote de Sectário', artifact: 'UNDEAD' },
   { id: 'AVALON', name: 'Capote da Pureza', artifact: 'AVALON' },
   { id: 'FEY', name: 'Capote Escama-feérica', artifact: 'FEY' },
+];
+
+const CLOTH_SHOE_TYPES = [
+  { id: 'SET1', name: 'Sandálias de Erudito', artifact: null },
+  { id: 'SET2', name: 'Sandálias de Clérigo', artifact: null },
+  { id: 'SET3', name: 'Sandálias de Mago', artifact: null },
+  { id: 'KEEPER', name: 'Sandálias de Druida', artifact: 'KEEPER' },
+  { id: 'HELL', name: 'Sandálias Malévolas', artifact: 'HELL' },
+  { id: 'UNDEAD', name: 'Sandálias de Sectário', artifact: 'UNDEAD' },
+  { id: 'AVALON', name: 'Sandálias da Pureza', artifact: 'AVALON' },
+  { id: 'FEY', name: 'Sandálias Escama-feérica', artifact: 'FEY' },
 ];
 
 const LEATHER_JACKET_TYPES = [
@@ -53,6 +64,17 @@ const LEATHER_HOOD_TYPES = [
   { id: 'UNDEAD', name: 'Capuz de Espectro', artifact: 'UNDEAD' },
   { id: 'AVALON', name: 'Capuz Tenaz', artifact: 'AVALON' },
   { id: 'FEY', name: 'Capuz Andarilho-da-névoa', artifact: 'FEY' },
+];
+
+const LEATHER_SHOE_TYPES = [
+  { id: 'SET1', name: 'Sapatos de Mercenário', artifact: null },
+  { id: 'SET2', name: 'Sapatos de Caçador', artifact: null },
+  { id: 'SET3', name: 'Sapatos de Assassino', artifact: null },
+  { id: 'KEEPER', name: 'Sapatos de Espreitador', artifact: 'KEEPER' },
+  { id: 'HELL', name: 'Sapatos Infernais', artifact: 'HELL' },
+  { id: 'UNDEAD', name: 'Sapatos de Espectro', artifact: 'UNDEAD' },
+  { id: 'AVALON', name: 'Sapatos Tenazes', artifact: 'AVALON' },
+  { id: 'FEY', name: 'Sapatos Andarilho-da-névoa', artifact: 'FEY' },
 ];
 
 const PLATE_ARMOR_TYPES = [
@@ -139,6 +161,99 @@ const ARCANE_STAFF_TYPES = [
   { id: '2H_ARCANESTAFF_AVALON', name: 'Alvorecer', artifact: '2H_ARCANESTAFF_AVALON', resources: { planks: 12, cloth: 8 } },
 ];
 
+const AXE_TYPES = [
+  { id: 'MAIN_AXE', name: 'Machado', artifact: null, resources: { bars: 24, planks: 8 } },
+  { id: '2H_AXE', name: 'Grande Machado', artifact: null, resources: { bars: 32, planks: 0 } },
+  { id: '2H_HALBERD', name: 'Alabarda', artifact: null, resources: { bars: 32, planks: 0 } },
+  { id: '2H_CARRIONEATER', name: 'Segadeira de Almas', artifact: '2H_CARRIONEATER', resources: { bars: 20, planks: 12 } },
+  { id: '2H_SCYTHE_HELL', name: 'Gadanha Infernal', artifact: '2H_SCYTHE_HELL', resources: { bars: 32, planks: 0 } },
+  { id: '2H_BATTLEAXE_KEEPER', name: 'Machado de Batalha de urso', artifact: '2H_BATTLEAXE_KEEPER', resources: { bars: 20, planks: 12 } },
+  { id: '2H_AXE_AVALON', name: 'Portador da Noite', artifact: '2H_AXE_AVALON', resources: { bars: 20, planks: 12 } },
+];
+
+const MACE_TYPES = [
+  { id: 'MAIN_MACE', name: 'Maça', artifact: null, resources: { bars: 16, planks: 0 } },
+  { id: '2H_MACE', name: 'Maça Pesada', artifact: null, resources: { bars: 20, planks: 0 } },
+  { id: '2H_FLAIL', name: 'Mangual', artifact: null, resources: { bars: 20, planks: 0 } },
+  { id: 'MAIN_ROCKMACE_KEEPER', name: 'Maça de Pedra', artifact: 'MAIN_ROCKMACE_KEEPER', resources: { bars: 16, planks: 0 } },
+  { id: '2H_MACE_HELL', name: 'Incubus', artifact: '2H_MACE_HELL', resources: { bars: 20, planks: 0 } },
+  { id: '2H_MACE_UNDEAD', name: 'Maça de Camas', artifact: '2H_MACE_UNDEAD', resources: { bars: 20, planks: 0 } },
+  { id: '2H_MACE_AVALON', name: 'Maça de Cristal', artifact: '2H_MACE_AVALON', resources: { bars: 20, planks: 0 } },
+];
+
+const HAMMER_TYPES = [
+  { id: 'MAIN_HAMMER', name: 'Martelo', artifact: null, resources: { bars: 16, planks: 0 } },
+  { id: '2H_HAMMER', name: 'Grande Martelo', artifact: null, resources: { bars: 20, planks: 0 } },
+  { id: '2H_POLEHAMMER', name: 'Martelo de Haste', artifact: null, resources: { bars: 20, planks: 0 } },
+  { id: '2H_HAMMER_UNDEAD', name: 'Guardião de Túmulos', artifact: '2H_HAMMER_UNDEAD', resources: { bars: 20, planks: 0 } },
+  { id: '2H_DUALHAMMER_HELL', name: 'Forja-almas', artifact: '2H_DUALHAMMER_HELL', resources: { bars: 20, planks: 0 } },
+  { id: '2H_HAMMER_AVALON', name: 'Martelo de Cristal', artifact: '2H_HAMMER_AVALON', resources: { bars: 20, planks: 0 } },
+];
+
+const CROSSBOW_TYPES = [
+  { id: 'MAIN_CROSSBOW', name: 'Besta', artifact: null, resources: { planks: 20, bars: 12 } },
+  { id: '2H_CROSSBOW', name: 'Besta Pesada', artifact: null, resources: { planks: 20, bars: 12 } },
+  { id: '2H_REPEATINGCROSSBOW', name: 'Besta Leve', artifact: null, resources: { planks: 20, bars: 12 } },
+  { id: '2H_DUALCROSSBOW_HELL', name: 'Besta de Repetição', artifact: '2H_DUALCROSSBOW_HELL', resources: { planks: 20, bars: 12 } },
+  { id: '2H_CROSSBOW_AVALON', name: 'Besta de Cristal', artifact: '2H_CROSSBOW_AVALON', resources: { planks: 20, bars: 12 } },
+];
+
+const FIRE_STAFF_TYPES = [
+  { id: 'MAIN_FIRESTAFF', name: 'Cajado de Fogo', artifact: null, resources: { planks: 16, cloth: 0 } },
+  { id: '2H_FIRESTAFF', name: 'Grande Cajado de Fogo', artifact: null, resources: { planks: 20, cloth: 0 } },
+  { id: '2H_INFERNOSTAFF', name: 'Cajado Infernal', artifact: null, resources: { planks: 20, cloth: 0 } },
+  { id: 'MAIN_FIRESTAFF_KEEPER', name: 'Cajado de Fogo de Enxofre', artifact: 'MAIN_FIRESTAFF_KEEPER', resources: { planks: 16, cloth: 0 } },
+  { id: '2H_FIRESTAFF_HELL', name: 'Cajado de Fogo de Brimstone', artifact: '2H_FIRESTAFF_HELL', resources: { planks: 20, cloth: 0 } },
+];
+
+const HOLY_STAFF_TYPES = [
+  { id: 'MAIN_HOLYSTAFF', name: 'Cajado Sagrado', artifact: null, resources: { planks: 16, cloth: 0 } },
+  { id: '2H_HOLYSTAFF', name: 'Grande Cajado Sagrado', artifact: null, resources: { planks: 20, cloth: 0 } },
+  { id: '2H_DIVINESTAFF', name: 'Cajado Divino', artifact: null, resources: { planks: 20, cloth: 0 } },
+  { id: 'MAIN_HOLYSTAFF_MORGANA', name: 'Cajado da Queda', artifact: 'MAIN_HOLYSTAFF_MORGANA', resources: { planks: 16, cloth: 0 } },
+  { id: '2H_HOLYSTAFF_HELL', name: 'Cajado da Redenção', artifact: '2H_HOLYSTAFF_HELL', resources: { planks: 20, cloth: 0 } },
+];
+
+const NATURE_STAFF_TYPES = [
+  { id: 'MAIN_NATURESTAFF', name: 'Cajado da Natureza', artifact: null, resources: { planks: 16, cloth: 0 } },
+  { id: '2H_NATURESTAFF', name: 'Grande Cajado da Natureza', artifact: null, resources: { planks: 20, cloth: 0 } },
+  { id: '2H_WILDSTAFF', name: 'Cajado Selvagem', artifact: null, resources: { planks: 20, cloth: 0 } },
+  { id: 'MAIN_NATURESTAFF_KEEPER', name: 'Cajado da Natureza de Garça', artifact: 'MAIN_NATURESTAFF_KEEPER', resources: { planks: 16, cloth: 0 } },
+  { id: '2H_NATURESTAFF_HELL', name: 'Cajado da Natureza Silvestre', artifact: '2H_NATURESTAFF_HELL', resources: { planks: 20, cloth: 0 } },
+];
+
+const FROST_STAFF_TYPES = [
+  { id: 'MAIN_FROSTSTAFF', name: 'Cajado de Gelo', artifact: null, resources: { planks: 16, cloth: 0 } },
+  { id: '2H_FROSTSTAFF', name: 'Grande Cajado de Gelo', artifact: null, resources: { planks: 20, cloth: 0 } },
+  { id: '2H_GLACIALSTAFF', name: 'Cajado Glacial', artifact: null, resources: { planks: 20, cloth: 0 } },
+  { id: 'MAIN_FROSTSTAFF_KEEPER', name: 'Cajado de Gelo das Bermudas', artifact: 'MAIN_FROSTSTAFF_KEEPER', resources: { planks: 16, cloth: 0 } },
+  { id: '2H_FROSTSTAFF_HELL', name: 'Cajado de Gelo de Icicle', artifact: '2H_FROSTSTAFF_HELL', resources: { planks: 20, cloth: 0 } },
+];
+
+const CURSE_STAFF_TYPES = [
+  { id: 'MAIN_CURSEDSTAFF', name: 'Cajado Amaldiçoado', artifact: null, resources: { planks: 16, cloth: 0 } },
+  { id: '2H_CURSEDSTAFF', name: 'Grande Cajado Amaldiçoado', artifact: null, resources: { planks: 20, cloth: 0 } },
+  { id: '2H_DEMONICSTAFF', name: 'Cajado Demoníaco', artifact: null, resources: { planks: 20, cloth: 0 } },
+  { id: 'MAIN_CURSEDSTAFF_UNDEAD', name: 'Cajado Amaldiçoado de Mãos da Vida', artifact: 'MAIN_CURSEDSTAFF_UNDEAD', resources: { planks: 16, cloth: 0 } },
+  { id: '2H_CURSEDSTAFF_HELL', name: 'Cajado Amaldiçoado de Danação', artifact: '2H_CURSEDSTAFF_HELL', resources: { planks: 20, cloth: 0 } },
+];
+
+const QUARTERSTAFF_TYPES = [
+  { id: '2H_QUARTERSTAFF', name: 'Cajado de Batalha', artifact: null, resources: { planks: 12, leather: 20 } },
+  { id: '2H_IRONCLADSTAFF', name: 'Cajado Revestido de Ferro', artifact: null, resources: { planks: 12, leather: 20 } },
+  { id: '2H_DOUBLEBLADEDSTAFF', name: 'Cajado de Lâmina Dupla', artifact: null, resources: { planks: 12, leather: 20 } },
+  { id: '2H_QUARTERSTAFF_KEEPER', name: 'Cajado de Batalha de urso', artifact: '2H_QUARTERSTAFF_KEEPER', resources: { planks: 12, leather: 20 } },
+];
+
+const OFFHAND_TYPES = [
+  { id: 'OFF_SHIELD', name: 'Escudo', artifact: null, resources: { bars: 8 } },
+  { id: 'OFF_BOOK', name: 'Tomo de Feitiços', artifact: null, resources: { cloth: 8 } },
+  { id: 'OFF_TORCH', name: 'Tocha', artifact: null, resources: { planks: 8 } },
+  { id: 'OFF_SHIELD_HELL', name: 'Sarcófago', artifact: 'OFF_SHIELD_HELL', resources: { bars: 8 } },
+  { id: 'OFF_BOOK_HELL', name: 'Muleta', artifact: 'OFF_BOOK_HELL', resources: { cloth: 8 } },
+  { id: 'OFF_TORCH_HELL', name: 'Vela de Sétimo Sono', artifact: 'OFF_TORCH_HELL', resources: { planks: 8 } },
+];
+
 const TIER_FAME: Record<string, number> = {
   'T4': 180,
   'T5': 360,
@@ -182,6 +297,12 @@ TIERS.forEach(tier => {
       ITEMS.push({ id: artifactId, name: `Artefato de ${cowl.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
     }
   });
+  CLOTH_SHOE_TYPES.forEach(shoe => {
+    if (shoe.artifact) {
+      const artifactId = `${tier}_ARTIFACT_SHOES_CLOTH_${shoe.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${shoe.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
   LEATHER_JACKET_TYPES.forEach(jacket => {
     if (jacket.artifact) {
       const artifactId = `${tier}_ARTIFACT_ARMOR_LEATHER_${jacket.artifact}`;
@@ -192,6 +313,12 @@ TIERS.forEach(tier => {
     if (hood.artifact) {
       const artifactId = `${tier}_ARTIFACT_HEAD_LEATHER_${hood.artifact}`;
       ITEMS.push({ id: artifactId, name: `Artefato de ${hood.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
+  LEATHER_SHOE_TYPES.forEach(shoe => {
+    if (shoe.artifact) {
+      const artifactId = `${tier}_ARTIFACT_SHOES_LEATHER_${shoe.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${shoe.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
     }
   });
   PLATE_ARMOR_TYPES.forEach(armor => {
@@ -240,6 +367,72 @@ TIERS.forEach(tier => {
     if (arcane.artifact) {
       const artifactId = `${tier}_ARTIFACT_${arcane.artifact}`;
       ITEMS.push({ id: artifactId, name: `Artefato de ${arcane.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
+  AXE_TYPES.forEach(item => {
+    if (item.artifact) {
+      const artifactId = `${tier}_ARTIFACT_${item.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${item.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
+  MACE_TYPES.forEach(item => {
+    if (item.artifact) {
+      const artifactId = `${tier}_ARTIFACT_${item.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${item.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
+  HAMMER_TYPES.forEach(item => {
+    if (item.artifact) {
+      const artifactId = `${tier}_ARTIFACT_${item.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${item.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
+  CROSSBOW_TYPES.forEach(item => {
+    if (item.artifact) {
+      const artifactId = `${tier}_ARTIFACT_${item.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${item.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
+  FIRE_STAFF_TYPES.forEach(item => {
+    if (item.artifact) {
+      const artifactId = `${tier}_ARTIFACT_${item.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${item.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
+  HOLY_STAFF_TYPES.forEach(item => {
+    if (item.artifact) {
+      const artifactId = `${tier}_ARTIFACT_${item.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${item.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
+  NATURE_STAFF_TYPES.forEach(item => {
+    if (item.artifact) {
+      const artifactId = `${tier}_ARTIFACT_${item.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${item.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
+  FROST_STAFF_TYPES.forEach(item => {
+    if (item.artifact) {
+      const artifactId = `${tier}_ARTIFACT_${item.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${item.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
+  CURSE_STAFF_TYPES.forEach(item => {
+    if (item.artifact) {
+      const artifactId = `${tier}_ARTIFACT_${item.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${item.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
+  QUARTERSTAFF_TYPES.forEach(item => {
+    if (item.artifact) {
+      const artifactId = `${tier}_ARTIFACT_${item.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${item.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
+    }
+  });
+  OFFHAND_TYPES.forEach(item => {
+    if (item.artifact) {
+      const artifactId = `${tier}_ARTIFACT_${item.artifact}`;
+      ITEMS.push({ id: artifactId, name: `Artefato de ${item.name} ${tier}`, category: 'Artefatos', tier: tier as any, enchantment: '0' });
     }
   });
 });
@@ -291,7 +484,7 @@ TIERS.forEach(tier => {
     CLOTH_COWL_TYPES.forEach(cowl => {
       const cowlId = `${tier}_HEAD_CLOTH_${cowl.id}${itemEnchSuffix}`;
       const cowlName = `${cowl.name} ${tier}.${ench}`;
-      ITEMS.push({ id: cowlId, name: cowlName, category: 'Capuzes de Tecido', tier: tier as any, enchantment: ench as any });
+      ITEMS.push({ id: cowlId, name: cowlName, category: 'Capotes de Tecido', tier: tier as any, enchantment: ench as any });
       
       const materials = [{ itemId: clothId, amount: 8 }];
       if (cowl.artifact) {
@@ -300,6 +493,26 @@ TIERS.forEach(tier => {
 
       RECIPES.push({
         itemId: cowlId,
+        materials,
+        fame: TIER_FAME[tier] / 2,
+        journalId: `${tier}_JOURNAL_MAGIC_EMPTY`,
+        baseFocusCost: TIER_FOCUS[tier] / 2,
+      });
+    });
+
+    // Cloth Shoes
+    CLOTH_SHOE_TYPES.forEach(shoe => {
+      const shoeId = `${tier}_SHOES_CLOTH_${shoe.id}${itemEnchSuffix}`;
+      const shoeName = `${shoe.name} ${tier}.${ench}`;
+      ITEMS.push({ id: shoeId, name: shoeName, category: 'Sapatos de Tecido', tier: tier as any, enchantment: ench as any });
+      
+      const materials = [{ itemId: clothId, amount: 8 }];
+      if (shoe.artifact) {
+        materials.push({ itemId: `${tier}_ARTIFACT_SHOES_CLOTH_${shoe.artifact}`, amount: 1 });
+      }
+
+      RECIPES.push({
+        itemId: shoeId,
         materials,
         fame: TIER_FAME[tier] / 2,
         journalId: `${tier}_JOURNAL_MAGIC_EMPTY`,
@@ -340,6 +553,26 @@ TIERS.forEach(tier => {
 
       RECIPES.push({
         itemId: hoodId,
+        materials,
+        fame: TIER_FAME[tier] / 2,
+        journalId: `${tier}_JOURNAL_HUNTER_EMPTY`,
+        baseFocusCost: TIER_FOCUS[tier] / 2,
+      });
+    });
+
+    // Leather Shoes
+    LEATHER_SHOE_TYPES.forEach(shoe => {
+      const shoeId = `${tier}_SHOES_LEATHER_${shoe.id}${itemEnchSuffix}`;
+      const shoeName = `${shoe.name} ${tier}.${ench}`;
+      ITEMS.push({ id: shoeId, name: shoeName, category: 'Sapatos de Couro', tier: tier as any, enchantment: ench as any });
+      
+      const materials = [{ itemId: leatherId, amount: 8 }];
+      if (shoe.artifact) {
+        materials.push({ itemId: `${tier}_ARTIFACT_SHOES_LEATHER_${shoe.artifact}`, amount: 1 });
+      }
+
+      RECIPES.push({
+        itemId: shoeId,
         materials,
         fame: TIER_FAME[tier] / 2,
         journalId: `${tier}_JOURNAL_HUNTER_EMPTY`,
@@ -535,6 +768,121 @@ TIERS.forEach(tier => {
         baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier,
       });
     });
+
+    // Axes
+    AXE_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}.${ench}`, category: 'Machados', tier: tier as any, enchantment: ench as any });
+      const materials = [
+        { itemId: barId, amount: item.resources.bars },
+        { itemId: plankId, amount: item.resources.planks }
+      ];
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      const resourceMultiplier = (item.resources.bars + item.resources.planks) / 16;
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] * resourceMultiplier, journalId: `${tier}_JOURNAL_WARRIOR_EMPTY`, baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier });
+    });
+
+    // Maces
+    MACE_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}.${ench}`, category: 'Maças', tier: tier as any, enchantment: ench as any });
+      const materials = [{ itemId: barId, amount: item.resources.bars }];
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      const resourceMultiplier = item.resources.bars / 16;
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] * resourceMultiplier, journalId: `${tier}_JOURNAL_WARRIOR_EMPTY`, baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier });
+    });
+
+    // Hammers
+    HAMMER_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}.${ench}`, category: 'Martelos', tier: tier as any, enchantment: ench as any });
+      const materials = [{ itemId: barId, amount: item.resources.bars }];
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      const resourceMultiplier = item.resources.bars / 16;
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] * resourceMultiplier, journalId: `${tier}_JOURNAL_WARRIOR_EMPTY`, baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier });
+    });
+
+    // Crossbows
+    CROSSBOW_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}.${ench}`, category: 'Bestas', tier: tier as any, enchantment: ench as any });
+      const materials = [{ itemId: plankId, amount: item.resources.planks }, { itemId: barId, amount: item.resources.bars }];
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      const resourceMultiplier = (item.resources.planks + item.resources.bars) / 16;
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] * resourceMultiplier, journalId: `${tier}_JOURNAL_HUNTER_EMPTY`, baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier });
+    });
+
+    // Fire Staffs
+    FIRE_STAFF_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}.${ench}`, category: 'Cajados de Fogo', tier: tier as any, enchantment: ench as any });
+      const materials = [{ itemId: plankId, amount: item.resources.planks }];
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      const resourceMultiplier = item.resources.planks / 16;
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] * resourceMultiplier, journalId: `${tier}_JOURNAL_MAGIC_EMPTY`, baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier });
+    });
+
+    // Holy Staffs
+    HOLY_STAFF_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}.${ench}`, category: 'Cajados Sagrados', tier: tier as any, enchantment: ench as any });
+      const materials = [{ itemId: plankId, amount: item.resources.planks }];
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      const resourceMultiplier = item.resources.planks / 16;
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] * resourceMultiplier, journalId: `${tier}_JOURNAL_MAGIC_EMPTY`, baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier });
+    });
+
+    // Nature Staffs
+    NATURE_STAFF_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}.${ench}`, category: 'Cajados da Natureza', tier: tier as any, enchantment: ench as any });
+      const materials = [{ itemId: plankId, amount: item.resources.planks }];
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      const resourceMultiplier = item.resources.planks / 16;
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] * resourceMultiplier, journalId: `${tier}_JOURNAL_HUNTER_EMPTY`, baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier });
+    });
+
+    // Frost Staffs
+    FROST_STAFF_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}.${ench}`, category: 'Cajados de Gelo', tier: tier as any, enchantment: ench as any });
+      const materials = [{ itemId: plankId, amount: item.resources.planks }];
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      const resourceMultiplier = item.resources.planks / 16;
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] * resourceMultiplier, journalId: `${tier}_JOURNAL_MAGIC_EMPTY`, baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier });
+    });
+
+    // Curse Staffs
+    CURSE_STAFF_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}.${ench}`, category: 'Cajados Amaldiçoados', tier: tier as any, enchantment: ench as any });
+      const materials = [{ itemId: plankId, amount: item.resources.planks }];
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      const resourceMultiplier = item.resources.planks / 16;
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] * resourceMultiplier, journalId: `${tier}_JOURNAL_MAGIC_EMPTY`, baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier });
+    });
+
+    // Quarterstaffs
+    QUARTERSTAFF_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}.${ench}`, category: 'Cajados de Batalha', tier: tier as any, enchantment: ench as any });
+      const materials = [{ itemId: leatherId, amount: item.resources.leather }, { itemId: plankId, amount: item.resources.planks }];
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      const resourceMultiplier = (item.resources.leather + item.resources.planks) / 16;
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] * resourceMultiplier, journalId: `${tier}_JOURNAL_HUNTER_EMPTY`, baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier });
+    });
+
+    // Off-hands
+    OFFHAND_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}`, category: 'Itens Secundários', tier: tier as any, enchantment: ench as any });
+      const materials = [];
+      if (item.resources.bars) materials.push({ itemId: barId, amount: item.resources.bars });
+      if (item.resources.cloth) materials.push({ itemId: clothId, amount: item.resources.cloth });
+      if (item.resources.planks) materials.push({ itemId: plankId, amount: item.resources.planks });
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] / 4, journalId: `${tier}_JOURNAL_WARRIOR_EMPTY`, baseFocusCost: TIER_FOCUS[tier] / 4 });
+    });
   });
 });
 
@@ -666,4 +1014,88 @@ export const SPEC_NODES: SpecNode[] = [
   { id: '2H_ARCANESTAFF_HELL', name: 'Especialista em Cajado Arcano Oculto', baseNodeId: 'baseArcane', multiplier: 250, isArtifact: true },
   { id: '2H_ARCANESTAFF_UNDEAD', name: 'Especialista em Locus Malevolente', baseNodeId: 'baseArcane', multiplier: 250, isArtifact: true },
   { id: '2H_ARCANESTAFF_AVALON', name: 'Especialista em Alvorecer', baseNodeId: 'baseArcane', multiplier: 250, isArtifact: true },
+
+  // Cloth Shoes (Sandals)
+  { id: 'baseClothShoes', name: 'Fabricante de Sandálias de Tecido', multiplier: 30 },
+  { id: 'SHOE_CLOTH_SET1', name: 'Especialista em Sandálias de Erudito', baseNodeId: 'baseClothShoes', multiplier: 250 },
+  { id: 'SHOE_CLOTH_SET2', name: 'Especialista em Sandálias de Clérigo', baseNodeId: 'baseClothShoes', multiplier: 250 },
+  { id: 'SHOE_CLOTH_SET3', name: 'Especialista em Sandálias de Mago', baseNodeId: 'baseClothShoes', multiplier: 250 },
+  { id: 'SHOE_CLOTH_KEEPER', name: 'Especialista em Sandálias de Druida', baseNodeId: 'baseClothShoes', multiplier: 250, isArtifact: true },
+  { id: 'SHOE_CLOTH_HELL', name: 'Especialista em Sandálias Malévolas', baseNodeId: 'baseClothShoes', multiplier: 250, isArtifact: true },
+  { id: 'SHOE_CLOTH_UNDEAD', name: 'Especialista em Sandálias de Sectário', baseNodeId: 'baseClothShoes', multiplier: 250, isArtifact: true },
+  { id: 'SHOE_CLOTH_AVALON', name: 'Especialista em Sandálias da Pureza', baseNodeId: 'baseClothShoes', multiplier: 250, isArtifact: true },
+  { id: 'SHOE_CLOTH_FEY', name: 'Especialista em Sandálias Escama-feérica', baseNodeId: 'baseClothShoes', multiplier: 250, isArtifact: true },
+
+  // Leather Shoes
+  { id: 'baseLeatherShoes', name: 'Fabricante de Sapatos de Couro', multiplier: 30 },
+  { id: 'SHOE_LEATHER_SET1', name: 'Especialista em Sapatos de Mercenário', baseNodeId: 'baseLeatherShoes', multiplier: 250 },
+  { id: 'SHOE_LEATHER_SET2', name: 'Especialista em Sapatos de Caçador', baseNodeId: 'baseLeatherShoes', multiplier: 250 },
+  { id: 'SHOE_LEATHER_SET3', name: 'Especialista em Sapatos de Assassino', baseNodeId: 'baseLeatherShoes', multiplier: 250 },
+  { id: 'SHOE_LEATHER_KEEPER', name: 'Especialista em Sapatos de Espreitador', baseNodeId: 'baseLeatherShoes', multiplier: 250, isArtifact: true },
+  { id: 'SHOE_LEATHER_HELL', name: 'Especialista em Sapatos Infernais', baseNodeId: 'baseLeatherShoes', multiplier: 250, isArtifact: true },
+  { id: 'SHOE_LEATHER_UNDEAD', name: 'Especialista em Sapatos de Espectro', baseNodeId: 'baseLeatherShoes', multiplier: 250, isArtifact: true },
+  { id: 'SHOE_LEATHER_AVALON', name: 'Especialista em Sapatos Tenazes', baseNodeId: 'baseLeatherShoes', multiplier: 250, isArtifact: true },
+  { id: 'SHOE_LEATHER_FEY', name: 'Especialista em Sapatos Andarilho-da-névoa', baseNodeId: 'baseLeatherShoes', multiplier: 250, isArtifact: true },
+
+  // Axes
+  { id: 'baseAxe', name: 'Fabricante de Machados', multiplier: 30 },
+  { id: 'MAIN_AXE', name: 'Especialista em Machado', baseNodeId: 'baseAxe', multiplier: 250 },
+  { id: '2H_AXE', name: 'Especialista em Grande Machado', baseNodeId: 'baseAxe', multiplier: 250 },
+  { id: '2H_HALBERD', name: 'Especialista em Alabarda', baseNodeId: 'baseAxe', multiplier: 250 },
+  { id: '2H_CARRIONEATER', name: 'Especialista em Segadeira de Almas', baseNodeId: 'baseAxe', multiplier: 250, isArtifact: true },
+  { id: '2H_SCYTHE_HELL', name: 'Especialista em Gadanha Infernal', baseNodeId: 'baseAxe', multiplier: 250, isArtifact: true },
+  { id: '2H_BATTLEAXE_KEEPER', name: 'Especialista em Machado de Batalha de urso', baseNodeId: 'baseAxe', multiplier: 250, isArtifact: true },
+  { id: '2H_AXE_AVALON', name: 'Especialista em Portador da Noite', baseNodeId: 'baseAxe', multiplier: 250, isArtifact: true },
+
+  // Maces
+  { id: 'baseMace', name: 'Fabricante de Maças', multiplier: 30 },
+  { id: 'MAIN_MACE', name: 'Especialista em Maça', baseNodeId: 'baseMace', multiplier: 250 },
+  { id: '2H_MACE', name: 'Especialista em Maça Pesada', baseNodeId: 'baseMace', multiplier: 250 },
+  { id: '2H_FLAIL', name: 'Especialista em Mangual', baseNodeId: 'baseMace', multiplier: 250 },
+  { id: 'MAIN_ROCKMACE_KEEPER', name: 'Especialista em Maça de Pedra', baseNodeId: 'baseMace', multiplier: 250, isArtifact: true },
+  { id: '2H_MACE_HELL', name: 'Especialista em Incubus', baseNodeId: 'baseMace', multiplier: 250, isArtifact: true },
+  { id: '2H_MACE_UNDEAD', name: 'Especialista em Maça de Camas', baseNodeId: 'baseMace', multiplier: 250, isArtifact: true },
+  { id: '2H_MACE_AVALON', name: 'Especialista em Maça de Cristal', baseNodeId: 'baseMace', multiplier: 250, isArtifact: true },
+
+  // Hammers
+  { id: 'baseHammer', name: 'Fabricante de Martelos', multiplier: 30 },
+  { id: 'MAIN_HAMMER', name: 'Especialista em Martelo', baseNodeId: 'baseHammer', multiplier: 250 },
+  { id: '2H_HAMMER', name: 'Especialista em Grande Martelo', baseNodeId: 'baseHammer', multiplier: 250 },
+  { id: '2H_POLEHAMMER', name: 'Especialista em Martelo de Haste', baseNodeId: 'baseHammer', multiplier: 250 },
+  { id: '2H_HAMMER_UNDEAD', name: 'Especialista em Guardião de Túmulos', baseNodeId: 'baseHammer', multiplier: 250, isArtifact: true },
+  { id: '2H_DUALHAMMER_HELL', name: 'Especialista em Forja-almas', baseNodeId: 'baseHammer', multiplier: 250, isArtifact: true },
+  { id: '2H_HAMMER_AVALON', name: 'Especialista em Martelo de Cristal', baseNodeId: 'baseHammer', multiplier: 250, isArtifact: true },
+
+  // Crossbows
+  { id: 'baseCrossbow', name: 'Fabricante de Bestas', multiplier: 30 },
+  { id: 'MAIN_CROSSBOW', name: 'Especialista em Besta', baseNodeId: 'baseCrossbow', multiplier: 250 },
+  { id: '2H_CROSSBOW', name: 'Especialista em Besta Pesada', baseNodeId: 'baseCrossbow', multiplier: 250 },
+  { id: '2H_REPEATINGCROSSBOW', name: 'Especialista em Besta Leve', baseNodeId: 'baseCrossbow', multiplier: 250 },
+  { id: '2H_DUALCROSSBOW_HELL', name: 'Especialista em Besta de Repetição', baseNodeId: 'baseCrossbow', multiplier: 250, isArtifact: true },
+  { id: '2H_CROSSBOW_AVALON', name: 'Especialista em Besta de Cristal', baseNodeId: 'baseCrossbow', multiplier: 250, isArtifact: true },
+
+  // Staves (Fire, Holy, Nature, Frost, Curse)
+  { id: 'baseFireStaff', name: 'Fabricante de Cajados de Fogo', multiplier: 30 },
+  { id: 'FIRE_STAFF_MAIN', name: 'Especialista em Cajado de Fogo', baseNodeId: 'baseFireStaff', multiplier: 250 },
+  { id: 'FIRE_STAFF_2H', name: 'Especialista em Grande Cajado de Fogo', baseNodeId: 'baseFireStaff', multiplier: 250 },
+  { id: 'FIRE_STAFF_INFERNO', name: 'Especialista em Cajado Infernal', baseNodeId: 'baseFireStaff', multiplier: 250 },
+
+  { id: 'baseHolyStaff', name: 'Fabricante de Cajados Sagrados', multiplier: 30 },
+  { id: 'HOLY_STAFF_MAIN', name: 'Especialista em Cajado Sagrado', baseNodeId: 'baseHolyStaff', multiplier: 250 },
+  { id: 'HOLY_STAFF_2H', name: 'Especialista em Grande Cajado Sagrado', baseNodeId: 'baseHolyStaff', multiplier: 250 },
+
+  { id: 'baseNatureStaff', name: 'Fabricante de Cajados da Natureza', multiplier: 30 },
+  { id: 'NATURE_STAFF_MAIN', name: 'Especialista em Cajado da Natureza', baseNodeId: 'baseNatureStaff', multiplier: 250 },
+
+  { id: 'baseFrostStaff', name: 'Fabricante de Cajados de Gelo', multiplier: 30 },
+  { id: 'FROST_STAFF_MAIN', name: 'Especialista em Cajado de Gelo', baseNodeId: 'baseFrostStaff', multiplier: 250 },
+
+  { id: 'baseCurseStaff', name: 'Fabricante de Cajados Amaldiçoados', multiplier: 30 },
+  { id: 'CURSE_STAFF_MAIN', name: 'Especialista em Cajado Amaldiçoado', baseNodeId: 'baseCurseStaff', multiplier: 250 },
+
+  // Off-hands
+  { id: 'baseOffhand', name: 'Fabricante de Itens Secundários', multiplier: 15 },
+  { id: 'OFF_SHIELD', name: 'Especialista em Escudo', baseNodeId: 'baseOffhand', multiplier: 125 },
+  { id: 'OFF_BOOK', name: 'Especialista em Tomo de Feitiços', baseNodeId: 'baseOffhand', multiplier: 125 },
+  { id: 'OFF_TORCH', name: 'Especialista em Tocha', baseNodeId: 'baseOffhand', multiplier: 125 },
 ];

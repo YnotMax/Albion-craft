@@ -281,7 +281,150 @@ export const Calculator: React.FC = () => {
       </div>
     );
   }
+// Helper Component for Detalhamento (to reuse in different positions)
+const DetailsBlock: React.FC<{
+  quantity: number;
+  calculations: any;
+  marketTax: number;
+  selectedRecipeId: string;
+  state: any;
+  updatePrice: (id: string, type: 'buy' | 'sell', val: number) => void;
+  useFocus: boolean;
+}> = ({ quantity, calculations, marketTax, selectedRecipeId, state, updatePrice, useFocus }) => (
+  <div className="bg-surface-container-low rounded-xl p-6 space-y-6 border border-outline-variant/10 shadow-lg relative overflow-hidden">
+    {/* Background flare */}
+    <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
 
+    <h5 className="text-sm font-bold uppercase tracking-widest flex items-center justify-between gap-2 relative z-10">
+      <div className="flex items-center gap-2">
+        <span className="material-symbols-outlined text-secondary text-sm">analytics</span>
+        Detalhamento
+      </div>
+      <div className="text-[10px] bg-secondary/20 text-secondary px-2 py-0.5 rounded font-bold">LOTE ({quantity}x)</div>
+    </h5>
+    
+    <div className="space-y-4 relative z-10">
+      {calculations.journalsFilled > 0 && (
+          <div className="flex justify-between items-center text-xs">
+          <span className="text-on-surface-variant">Diários Preenchidos</span>
+          <span className="font-bold text-primary">{Math.abs(calculations.journalsFilled).toFixed(2)} un</span>
+        </div>
+      )}
+
+      <div className="flex justify-between items-center text-xs">
+        <span className="text-on-surface-variant">Materiais (c/ RRR)</span>
+        <span className="font-bold text-error">- {Math.round(calculations.totalMaterialCost).toLocaleString()}</span>
+      </div>
+      
+      <div className="flex justify-between items-center text-xs">
+        <span className="text-on-surface-variant">Taxa de Estação</span>
+        <span className="font-bold text-error">- {Math.round(calculations.feeCost).toLocaleString()}</span>
+      </div>
+      
+      <div className="flex justify-between items-center text-xs">
+        <span className="text-on-surface-variant">Taxa de Mercado ({(marketTax * 100).toFixed(1)}%)</span>
+        <span className="font-bold text-error">- {Math.round(calculations.taxCost).toLocaleString()}</span>
+      </div>
+
+      <div className="pt-4 border-t border-outline-variant/20 flex justify-between items-center">
+        <div className="flex flex-col">
+          <span className="text-xs font-bold uppercase text-secondary">Lucro com Diários</span>
+          <span className="text-[10px] text-on-surface-variant">{calculations.journalProfit >= 0 ? 'Total ganho' : 'Prejuízo na revenda'}</span>
+        </div>
+        <span className={`text-lg font-bold ${calculations.journalProfit >= 0 ? 'text-primary' : 'text-error'}`}>
+          {calculations.journalProfit >= 0 ? '+' : ''}{Math.round(calculations.journalProfit).toLocaleString()}
+        </span>
+      </div>
+    </div>
+
+    <div className="space-y-3 pt-4 border-t border-outline-variant/20 relative z-10">
+      <div className="flex flex-col gap-2 bg-surface-container-highest/30 p-4 rounded-2xl border-2 border-primary/20 shadow-lg shadow-primary/5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-2 opacity-10">
+            <span className="material-symbols-outlined text-4xl text-primary">sell</span>
+          </div>
+          <label className="text-[10px] font-black text-primary uppercase ml-1 tracking-tighter flex items-center gap-1.5 grayscale opacity-70">
+            <span className="material-symbols-outlined text-sm">sell</span>
+            Preço de Venda Final:
+          </label>
+          <CurrencyInput
+            value={state.prices[selectedRecipeId]?.sell || 0}
+            onChange={(newValue) => updatePrice(selectedRecipeId, 'sell', newValue)}
+            className="bg-surface-container-lowest border border-primary/30 rounded-xl text-2xl font-black w-full text-primary shadow-inner focus:border-primary transition-all px-4 py-3 text-right outline-none ring-offset-2 focus:ring-2 focus:ring-primary/20"
+          />
+      </div>
+    </div>
+    
+  </div>
+);
+
+const InverseCalculationBlock: React.FC<{
+    recipe: any;
+    calculations: any;
+    ITEMS: any;
+}> = ({ recipe, calculations, ITEMS }) => (
+    <div className="bg-surface-container-low border border-outline-variant/10 rounded-xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+            <span className="material-symbols-outlined text-tertiary">inventory_2</span>
+            <h5 className="text-sm font-bold uppercase tracking-widest text-on-surface">Cálculo Inverso (Provisão)</h5>
+        </div>
+        <p className="text-[11px] text-on-surface-variant mb-6 italic">Informe quantos recursos você já possui no inventário para simular a capacidade máxima de fabricação.</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+            {recipe.materials.map((mat: any, idx: number) => {
+                const matItem = ITEMS.find((i: any) => i.id === mat.itemId);
+                const resourcesNeededPerItem = mat.amount * (1 - calculations.rrr);
+                return (
+                <div key={idx} className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-on-surface-variant uppercase ml-1">{matItem?.name} em Inventário</label>
+                    <input 
+                    type="number" 
+                    min="0" 
+                    placeholder="Ex: 500" 
+                    className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2.5 px-4 focus:ring-1 focus:ring-tertiary text-on-surface outline-none"
+                    onChange={(e) => {
+                        const available = parseInt(e.target.value) || 0;
+                        const maxItems = Math.floor(available / resourcesNeededPerItem);
+                        const resultEl = document.getElementById(`inverse-result-${idx}`);
+                        const topResultEl = document.getElementById('inverse-result-top');
+                        if (resultEl) resultEl.innerText = `Rende: ~${maxItems} crafts`;
+                        
+                        // Check all inputs to find limiting factor
+                        let limit = Infinity;
+                        recipe.materials.forEach((m: any, i: number) => {
+                        const inputEl = document.querySelectorAll('input[placeholder="Ex: 500"]')[i] as HTMLInputElement;
+                        if (inputEl) {
+                            const val = parseInt(inputEl.value) || 0;
+                            const req = m.amount * (1 - calculations.rrr);
+                            limit = Math.min(limit, Math.floor(val / req));
+                        }
+                        });
+                        const topElement = document.getElementById('inverse-result-top');
+                        if (topElement && limit !== Infinity) topElement.innerText = `${limit}`;
+                    }}
+                    />
+                    <p id={`inverse-result-${idx}`} className="text-[10px] text-tertiary font-bold ml-1 mt-1 block"></p>
+                </div>
+                )
+            })}
+            </div>
+            
+            <div className="bg-surface-container-high border border-outline-variant/20 flex flex-col items-center justify-center rounded-2xl p-6">
+            <div className="text-center">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Capacidade de Craft</p>
+                <p className="text-4xl font-bold text-tertiary tight-tracking flex items-baseline justify-center gap-2">
+                    <span id="inverse-result-top">0</span> 
+                    <span className="text-base font-normal opacity-70">Itens</span>
+                </p>
+                <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-on-surface-variant bg-surface-container-lowest px-3 py-1.5 rounded-full border border-outline-variant/10 max-w-[200px] mx-auto text-center">
+                <span className="material-symbols-outlined text-[14px]">info</span>
+                Limitado pelo recurso que preencher primeiro.
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+);
   return (
     <div className="p-4 md:p-8 space-y-8 md:space-y-10 max-w-[1600px] mx-auto relative">
       {/* Toast Notification */}
@@ -573,10 +716,11 @@ export const Calculator: React.FC = () => {
 
           {/* Main Work Area */}
           <div className="grid grid-cols-12 gap-6">
-            {/* Buying List & Inverse Config */}
-            <div className="col-span-12 xl:col-span-8 space-y-6">
+            
+            {/* Left Column (Buying List + Details on Mobile) */}
+            <div className="col-span-12 xl:col-span-8 flex flex-col gap-6">
               
-              {/* Buying List */}
+              {/* Buying List - Always First */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between px-2">
                   <h5 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
@@ -658,155 +802,27 @@ export const Calculator: React.FC = () => {
                 </div>
               </div>
 
-              {/* Inverse Calculation */}
-              <div className="mt-8 bg-surface-container-low border border-outline-variant/10 rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="material-symbols-outlined text-tertiary">inventory_2</span>
-                  <h5 className="text-sm font-bold uppercase tracking-widest text-on-surface">Cálculo Inverso (Provisão)</h5>
-                </div>
-                <p className="text-[11px] text-on-surface-variant mb-6 italic">Informe quantos recursos você já possui no inventário para simular a capacidade máxima de fabricação.</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    {recipe.materials.map((mat, idx) => {
-                      const matItem = ITEMS.find(i => i.id === mat.itemId);
-                      const resourcesNeededPerItem = mat.amount * (1 - calculations.rrr);
-                      return (
-                        <div key={idx} className="space-y-1.5">
-                          <label className="text-[10px] font-bold text-on-surface-variant uppercase ml-1">{matItem?.name} em Inventário</label>
-                          <input 
-                            type="number" 
-                            min="0"
-                            placeholder="Ex: 500" 
-                            className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2.5 px-4 focus:ring-1 focus:ring-tertiary text-on-surface outline-none"
-                            onChange={(e) => {
-                              const available = parseInt(e.target.value) || 0;
-                              const maxItems = Math.floor(available / resourcesNeededPerItem);
-                              const resultEl = document.getElementById(`inverse-result-${idx}`);
-                              const topResultEl = document.getElementById('inverse-result-top');
-                              if (resultEl) resultEl.innerText = `Rende: ~${maxItems} crafts`;
-                              
-                              // Check all inputs to find limiting factor
-                              let limit = Infinity;
-                              recipe.materials.forEach((m, i) => {
-                                const inputEl = document.querySelectorAll('input[placeholder="Ex: 500"]')[i] as HTMLInputElement;
-                                if (inputEl) {
-                                  const val = parseInt(inputEl.value) || 0;
-                                  const req = m.amount * (1 - calculations.rrr);
-                                  limit = Math.min(limit, Math.floor(val / req));
-                                }
-                              });
-                              const topElement = document.getElementById('inverse-result-top');
-                              if (topElement && limit !== Infinity) topElement.innerText = `${limit}`;
-                            }}
-                          />
-                          <p id={`inverse-result-${idx}`} className="text-[10px] text-tertiary font-bold ml-1 mt-1 block"></p>
-                        </div>
-                      )
-                    })}
-                  </div>
-                  
-                  <div className="bg-surface-container-high border border-outline-variant/20 flex flex-col items-center justify-center rounded-2xl p-6">
-                    <div className="text-center">
-                      <p className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Capacidade de Craft</p>
-                      <p className="text-4xl font-bold text-tertiary tight-tracking flex items-baseline justify-center gap-2">
-                         <span id="inverse-result-top">0</span> 
-                         <span className="text-base font-normal opacity-70">Itens</span>
-                      </p>
-                      <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-on-surface-variant bg-surface-container-lowest px-3 py-1.5 rounded-full border border-outline-variant/10 max-w-[200px] mx-auto text-center">
-                        <span className="material-symbols-outlined text-[14px]">info</span>
-                        Limitado pelo recurso que preencher primeiro.
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {/* Detalhamento Block - Only visible here for Mobile, hidden on XL here */}
+              <div className="xl:hidden">
+                <DetailsBlock quantity={quantity} calculations={calculations} marketTax={marketTax} selectedRecipeId={selectedRecipeId} state={state} updatePrice={updatePrice} useFocus={useFocus} />
               </div>
 
-            </div>
-
-            {/* Details & Breakdown */}
-            <div className="col-span-12 xl:col-span-4 space-y-6">
-              <div className="bg-surface-container-low rounded-xl p-6 space-y-6 border border-outline-variant/10 shadow-lg relative overflow-hidden">
-                {/* Background flare */}
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
-
-                <h5 className="text-sm font-bold uppercase tracking-widest flex items-center justify-between gap-2 relative z-10">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-secondary text-sm">analytics</span>
-                    Detalhamento
-                  </div>
-                  <div className="text-[10px] bg-secondary/20 text-secondary px-2 py-0.5 rounded font-bold">LOTE ({quantity}x)</div>
-                </h5>
-                
-                <div className="space-y-4 relative z-10">
-                  {calculations.journalsFilled > 0 && (
-                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-on-surface-variant">Diários Preenchidos</span>
-                      <span className="font-bold text-primary">{Math.abs(calculations.journalsFilled).toFixed(2)} un</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-on-surface-variant">Materiais (c/ RRR)</span>
-                    <span className="font-bold text-error">- {Math.round(calculations.totalMaterialCost).toLocaleString()}</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-on-surface-variant">Taxa de Estação</span>
-                    <span className="font-bold text-error">- {Math.round(calculations.feeCost).toLocaleString()}</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-on-surface-variant">Taxa de Mercado ({(marketTax * 100).toFixed(1)}%)</span>
-                    <span className="font-bold text-error">- {Math.round(calculations.taxCost).toLocaleString()}</span>
-                  </div>
-
-                  <div className="pt-4 border-t border-outline-variant/20 flex justify-between items-center">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold uppercase text-secondary">Lucro com Diários</span>
-                      <span className="text-[10px] text-on-surface-variant">{calculations.journalProfit >= 0 ? 'Total ganho' : 'Prejuízo na revenda'}</span>
-                    </div>
-                    <span className={`text-lg font-bold ${calculations.journalProfit >= 0 ? 'text-primary' : 'text-error'}`}>
-                      {calculations.journalProfit >= 0 ? '+' : ''}{Math.round(calculations.journalProfit).toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-3 pt-4 border-t border-outline-variant/20 relative z-10">
-                  <div className="flex flex-col gap-2 bg-surface-container-highest/30 p-4 rounded-2xl border-2 border-primary/20 shadow-lg shadow-primary/5 relative overflow-hidden">
-                     <div className="absolute top-0 right-0 p-2 opacity-10">
-                        <span className="material-symbols-outlined text-4xl text-primary">sell</span>
-                     </div>
-                     <label className="text-[10px] font-black text-primary uppercase ml-1 tracking-tighter flex items-center gap-1.5 grayscale opacity-70">
-                        <span className="material-symbols-outlined text-sm">sell</span>
-                        Preço de Venda Final:
-                     </label>
-                     <CurrencyInput
-                        value={state.prices[selectedRecipeId]?.sell || 0}
-                        onChange={(newValue) => updatePrice(selectedRecipeId, 'sell', newValue)}
-                        className="bg-surface-container-lowest border border-primary/30 rounded-xl text-2xl font-black w-full text-primary shadow-inner focus:border-primary transition-all px-4 py-3 text-right outline-none ring-offset-2 focus:ring-2 focus:ring-primary/20"
-                      />
-                  </div>
-                </div>
-                
+              {/* Inverse Calculation - Full width on bottom of Left Column for Desktop/XL context */}
+              <div className="hidden xl:block">
+                 <InverseCalculationBlock recipe={recipe} calculations={calculations} ITEMS={ITEMS} />
               </div>
-              
-              {/* Quick Prices Component Equivalent */}
-              {useFocus && (
-                 <div className="bg-surface-container-low rounded-xl p-6 space-y-4 border border-outline-variant/10 shadow-sm flex flex-col items-center justify-center">
-                    <div className="flex justify-between items-center w-full mb-2">
-                      <span className="text-[10px] font-bold uppercase text-on-surface-variant flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">bolt</span> Foco Restante Info
-                      </span>
-                    </div>
-                    <div className="text-center w-full">
-                       <p className="text-xs text-on-surface-variant font-medium mb-1">Prata Por Foco</p>
-                       <span className="text-3xl font-bold tight-tracking text-secondary">{calculations.silverPerFocus.toFixed(2)}</span>
-                       <p className="text-[10px] text-tertiary mt-2">Você precisaria de {(10000 / (calculations.silverPerFocus || 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })} foco para investir 10K prata.</p>
-                    </div>
-                </div>
-              )}
             </div>
+
+            {/* Right Column (Details on Desktop) */}
+            <div className="hidden xl:flex xl:col-span-4 flex-col gap-6">
+               <DetailsBlock quantity={quantity} calculations={calculations} marketTax={marketTax} selectedRecipeId={selectedRecipeId} state={state} updatePrice={updatePrice} useFocus={useFocus} />
+            </div>
+
+            {/* Inverse Calculation - Visible here for mobile as last item */}
+            <div className="col-span-12 xl:hidden">
+              <InverseCalculationBlock recipe={recipe} calculations={calculations} ITEMS={ITEMS} />
+            </div>
+
           </div>
         </div>
       </div>
