@@ -5,6 +5,7 @@ import { Trash2, TrendingUp, TrendingDown, Clock, Zap, Percent, RefreshCw, Info,
 import { CraftConfig } from '../types';
 
 import { calculateFocusCost } from '../utils/focus';
+import { calculateJournalsFilled } from '../utils/journal';
 
 export const Dashboard: React.FC = () => {
   const { state, removeFavorite, syncPrices, isSyncing, syncMessage, addGroup, removeGroup, updateFavoriteGroup } = useAppContext();
@@ -61,8 +62,7 @@ export const Dashboard: React.FC = () => {
       const currentFullPrice = state.prices[fullId]?.sell;
       const fullPrice = currentFullPrice > 0 ? currentFullPrice : (prices[fullId]?.sell || 0);
       
-      const journalCapacity = recipe.fame * 10;
-      const journalsFilled = recipe.fame / journalCapacity;
+      const journalsFilled = calculateJournalsFilled(recipe, item);
       journalProfit = journalsFilled * (fullPrice - emptyPrice) * quantity;
     }
 

@@ -7,6 +7,7 @@ import { formatTimeAgo } from '../utils/format';
 import { Calculator as CalcIcon, Save, Star, TrendingUp, TrendingDown, Settings, CheckCircle2, RefreshCw, Clock, Info, AlertCircle, Book } from 'lucide-react';
 
 import { calculateFocusCost } from '../utils/focus';
+import { calculateJournalsFilled } from '../utils/journal';
 
 export const Calculator: React.FC = () => {
   const { state, updatePrice, addFavorite, syncPrices, isSyncing, syncMessage, addGroup, setCalculatorState } = useAppContext();
@@ -159,10 +160,7 @@ export const Calculator: React.FC = () => {
       const fullId = recipe.journalId.replace('_EMPTY', '_FULL');
       const fullPrice = state.prices[fullId]?.sell || 0;
       
-      // Journal capacity is exactly 10x the fame of a 16-resource item of that tier
-      // T4: 1800, T5: 3600, T6: 7200, T7: 14400, T8: 28800
-      const journalCapacity = recipe.fame * 10; 
-      journalsFilled = recipe.fame / journalCapacity; // This will always be 0.1 for robes, but keeps the formula dynamic
+      journalsFilled = calculateJournalsFilled(recipe, item);
       
       journalProfit = journalsFilled * (fullPrice - emptyPrice) * quantity;
     }
