@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Book, Calculator, Coins, LayoutDashboard, Settings, ChevronLeft, ChevronRight, Github, Linkedin, Instagram, ExternalLink, Info } from 'lucide-react';
+import React from 'react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,141 +7,128 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-
   const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'specs', label: 'Especialização', icon: Book },
-    { id: 'prices', label: 'Preços', icon: Coins },
-    { id: 'calculator', label: 'Calculadora', icon: Calculator },
-    { id: 'about', label: 'Sobre o Projeto', icon: Info },
+    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+    { id: 'specs', label: 'Specialization', icon: 'military_tech' },
+    { id: 'prices', label: 'Prices', icon: 'payments' },
+    { id: 'calculator', label: 'Calculator', icon: 'calculate' },
+    { id: 'about', label: 'Sobre o Projeto', icon: 'info' },
   ];
 
+  const activeLabel = tabs.find(t => t.id === activeTab)?.label || 'Calculadora de Craft';
+
   return (
-    <div className="flex h-screen bg-zinc-950 text-zinc-100 font-sans overflow-hidden">
-      {/* Desktop Sidebar */}
-      <nav className={`hidden md:flex flex-col bg-zinc-900 border-r border-zinc-800 shrink-0 transition-all duration-300 ease-in-out z-20 ${isExpanded ? 'w-64' : 'w-20'}`}>
-        <div className="h-16 flex items-center justify-center border-b border-zinc-800 px-4 shrink-0">
-          <div className={`flex items-center gap-3 w-full ${isExpanded ? 'justify-start' : 'justify-center'}`}>
-            <div className="p-1.5 bg-amber-500/10 rounded-lg shrink-0">
-              <Calculator className="w-6 h-6 text-amber-500" />
-            </div>
-            {isExpanded && <span className="font-bold text-emerald-400 tracking-tight truncate animate-in fade-in duration-300">Albion Crafting</span>}
+    <div className="bg-surface text-on-surface overflow-hidden flex h-screen font-sans">
+      {/* SideNavBar (Desktop) */}
+      <aside className="hidden md:flex w-64 bg-surface-container-low flex-col border-r border-outline-variant/10 shrink-0">
+        <div className="p-6 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-on-primary" style={{ fontVariationSettings: "'FILL' 1" }}>fort</span>
+          </div>
+          <div className="truncate">
+            <h1 className="text-on-surface font-bold text-lg leading-tight tight-tracking">Slate Forge</h1>
+            <p className="text-on-surface-variant text-[10px] uppercase tracking-wider font-semibold">Albion Crafting Hub</p>
           </div>
         </div>
-
-        <div className={`flex-1 py-6 flex flex-col gap-2 px-3 no-scrollbar ${isExpanded ? 'overflow-y-auto' : 'overflow-y-hidden'}`}>
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
+        
+        <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto no-scrollbar">
+          {tabs.map(tab => {
             const isActive = activeTab === tab.id;
             return (
-              <div key={tab.id} className="relative group flex w-full">
-                <button
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 w-full ${
-                    isActive
-                      ? 'bg-amber-500/10 text-amber-500 shadow-sm shadow-amber-900/20'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
-                  } ${isExpanded ? 'justify-start' : 'justify-center'}`}
-                >
-                  <Icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-amber-500' : 'text-zinc-400 group-hover:text-zinc-200'}`} />
-                  {isExpanded && <span className="text-sm font-medium truncate">{tab.label}</span>}
-                </button>
-                
-                {/* Tooltip for collapsed state */}
-                {!isExpanded && (
-                  <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-3 py-2 bg-zinc-800 text-zinc-200 text-xs font-medium rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border border-zinc-700 whitespace-nowrap flex items-center">
-                    {tab.label}
-                    <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-4 border-transparent border-r-zinc-700"></div>
-                  </div>
-                )}
-              </div>
-            );
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left ${
+                  isActive 
+                    ? 'bg-surface-container-high text-primary' 
+                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                }`}
+              >
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>
+                  {tab.icon}
+                </span>
+                <span className="text-sm font-medium">{tab.label}</span>
+              </button>
+            )
           })}
-        </div>
-
-        <div className="p-4 border-t border-zinc-800 flex flex-col gap-4 shrink-0">
-          {isExpanded && (
-            <div className="flex flex-col gap-3 px-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Desenvolvido por</span>
-              <span className="text-sm font-bold text-zinc-200">Tony Max</span>
-              <div className="flex items-center gap-3">
-                <a href="https://github.com/YnotMax" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white transition-colors">
-                  <Github className="w-4 h-4" />
-                </a>
-                <a href="https://www.linkedin.com/in/tony-max-da-silva-costa/" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-blue-400 transition-colors">
-                  <Linkedin className="w-4 h-4" />
-                </a>
-                <a href="https://www.instagram.com/tony_max_silva/" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-pink-400 transition-colors">
-                  <Instagram className="w-4 h-4" />
-                </a>
-              </div>
+        </nav>
+        
+        <div className="p-4 mt-auto">
+          <div className="bg-surface-container rounded-xl p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-surface-bright flex items-center justify-center overflow-hidden shrink-0">
+               <span className="material-symbols-outlined text-on-surface-variant">person</span>
             </div>
-          )}
-          
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="p-2 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors w-full flex justify-center group"
-            title={isExpanded ? "Minimizar menu" : "Expandir menu"}
-          >
-            {isExpanded ? 
-              <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" /> : 
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
-            }
-          </button>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold truncate">Crafteiro Albion</p>
+              <p className="text-xs text-primary font-medium">Player</p>
+            </div>
+            <span className="material-symbols-outlined text-on-surface-variant text-sm cursor-pointer hover:text-on-surface">settings</span>
+          </div>
         </div>
-      </nav>
+      </aside>
 
-      {/* Mobile Layout Wrapper */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* Mobile Header */}
-        <header className="md:hidden bg-zinc-900 border-b border-zinc-800 p-4 shadow-md z-10 shrink-0">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-emerald-400 tracking-tight flex items-center gap-2">
-              <div className="p-1.5 bg-amber-500/10 rounded-lg">
-                <Calculator className="w-5 h-5 text-amber-500" />
-              </div>
-              Albion Crafting
-            </h1>
-            <div className="flex items-center gap-3">
-              <a href="https://github.com/YnotMax" target="_blank" rel="noopener noreferrer" className="text-zinc-500">
-                <Github className="w-4 h-4" />
-              </a>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-surface relative">
+        {/* TopNavBar */}
+        <header className="h-16 flex items-center justify-between px-4 md:px-8 bg-surface border-b border-outline-variant/10 shrink-0">
+          <div className="flex items-center gap-4 md:gap-6">
+            <h2 className="text-lg md:text-xl font-bold tight-tracking text-on-surface truncate hidden sm:block">{activeLabel}</h2>
+            <div className="flex items-center gap-2 bg-surface-container px-3 py-1.5 rounded-lg border border-outline-variant/20">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+              <span className="text-xs font-semibold text-on-surface-variant">Americas</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="relative hidden md:block">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+              <input 
+                type="text" 
+                placeholder="Search items..." 
+                className="bg-surface-container-lowest border-none rounded-lg pl-10 pr-4 py-2 text-sm w-48 lg:w-64 focus:ring-1 focus:ring-secondary focus:outline-none transition-all text-on-surface"
+              />
+            </div>
+            <div className="flex items-center gap-1 md:gap-2">
+              <button className="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors">
+                <span className="material-symbols-outlined">language</span>
+              </button>
+              <button className="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors">
+                <span className="material-symbols-outlined">notifications</span>
+              </button>
             </div>
           </div>
         </header>
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 bg-zinc-950 relative">
-          <div className="max-w-7xl mx-auto w-full h-full animate-in fade-in duration-500">
-            {children}
-          </div>
-        </main>
-
-        {/* Bottom Navigation (Mobile) */}
-        <nav className="fixed bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-md border-t border-zinc-800 md:hidden z-20">
-          <div className="flex justify-around items-center h-16 px-2">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${
-                    isActive ? 'text-amber-500' : 'text-zinc-500 hover:text-zinc-300'
-                  }`}
-                >
-                  <div className={`p-1.5 rounded-xl transition-all duration-300 ${isActive ? 'bg-amber-500/10 scale-110' : ''}`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <span className={`text-[10px] font-medium uppercase tracking-wider transition-all ${isActive ? 'opacity-100' : 'opacity-70'}`}>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
+        {/* Dynamic Page Content */}
+        <div className="flex-1 overflow-y-auto w-full no-scrollbar relative z-0">
+           {children}
+        </div>
+        
+        {/* Mobile Bottom Navigation */}
+        <nav className="md:hidden border-t border-outline-variant/10 bg-surface-container-low shrink-0 h-16 flex justify-around items-center px-2">
+          {tabs.map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${
+                  isActive ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                <div className={`p-1 rounded-xl transition-all duration-300 flex items-center justify-center ${isActive ? 'bg-primary/10' : ''}`}>
+                  <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>
+                    {tab.icon}
+                  </span>
+                </div>
+                <span className={`text-[9px] font-bold uppercase tracking-wider ${isActive ? 'opacity-100 text-primary' : 'opacity-70 text-on-surface-variant'}`}>
+                  {tab.label}
+                </span>
+              </button>
+            )
+          })}
         </nav>
-      </div>
+      </main>
     </div>
   );
 };

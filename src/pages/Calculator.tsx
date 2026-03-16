@@ -283,473 +283,498 @@ export const Calculator: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 relative">
+    <div className="p-4 md:p-8 space-y-8 md:space-y-10 max-w-[1600px] mx-auto relative">
       {/* Toast Notification */}
       {showToast && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-emerald-900 border border-emerald-500 text-emerald-100 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-inverse-primary border border-primary text-on-primary px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+          <span className="material-symbols-outlined text-on-primary">check_circle</span>
           <span className="font-medium">Configuração salva no Dashboard!</span>
         </div>
       )}
 
       {/* Sync Toast Notification */}
       {syncMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-zinc-900 border border-amber-500/50 text-amber-100 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50 animate-in fade-in slide-in-from-top-4 duration-300 mt-16">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-surface-container-highest border border-secondary text-secondary px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50 animate-in fade-in slide-in-from-top-4 duration-300 mt-16">
           {isSyncing ? (
-            <RefreshCw className="w-5 h-5 text-amber-400 animate-spin" />
+            <span className="material-symbols-outlined text-secondary animate-spin">refresh</span>
           ) : (
-            <Info className="w-5 h-5 text-amber-400" />
+            <span className="material-symbols-outlined text-primary">check_circle</span>
           )}
           <span className="font-medium">{syncMessage}</span>
         </div>
       )}
 
-      {/* RRR Toast Notification */}
-      {rrrToast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-zinc-900 border border-amber-500 text-amber-100 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <Info className="w-5 h-5 text-amber-400" />
-          <span className="font-medium">{rrrToast}</span>
-        </div>
-      )}
-
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-zinc-100">Calculadora de Craft</h2>
-          <p className="text-zinc-400 mt-1">Simule lucros e otimize o uso do seu foco.</p>
-        </div>
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <div className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 group/pasta relative">
-            <label className="text-[10px] text-zinc-500 uppercase font-bold">Pasta:</label>
-            {isAddingGroup ? (
-              <div className="flex items-center gap-1">
-                <input 
-                  type="text" 
-                  value={newGroupName}
-                  onChange={(e) => setNewGroupName(e.target.value)}
-                  className="bg-zinc-950 border border-zinc-600 rounded px-2 py-0.5 text-xs text-zinc-100 w-24 focus:outline-none focus:border-amber-500"
-                  placeholder="Nome..."
-                  autoFocus
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddGroup()}
-                />
-                <button onClick={handleAddGroup} className="text-emerald-500 hover:text-emerald-400 text-xs font-bold">OK</button>
-                <button onClick={() => setIsAddingGroup(false)} className="text-red-500 hover:text-red-400 text-xs font-bold">X</button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <select 
-                  value={selectedGroup}
-                  onChange={(e) => setSelectedGroup(e.target.value)}
-                  className="bg-transparent text-xs text-zinc-100 font-semibold focus:outline-none cursor-pointer"
-                >
-                  {state.groups.map(g => <option key={g} value={g} className="bg-zinc-900">{g}</option>)}
-                </select>
-                <button 
-                  onClick={() => setIsAddingGroup(true)}
-                  className="text-zinc-500 hover:text-amber-500 transition-colors"
-                  title="Nova Pasta"
-                >
-                  <CalcIcon className="w-3 h-3" />
-                </button>
-              </div>
-            )}
-            {/* Tooltip Pasta */}
-            <div className="absolute top-full left-0 mt-2 w-48 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/pasta:opacity-100 group-hover/pasta:visible transition-all z-50 pointer-events-none">
-              Escolha em qual pasta do Dashboard este craft será salvo.
-            </div>
+      {/* Hero Title */}
+      <div className="flex flex-col gap-1">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-2xl md:text-3xl font-bold tight-tracking text-on-surface">Calculadora de Craft</h3>
+            <p className="text-on-surface-variant text-sm">Simule lucros e otimize o uso do seu foco em tempo real.</p>
           </div>
-          <MarketSelector />
-          <div className="relative group/fav w-full sm:w-auto">
-            <button 
-              onClick={handleSaveFavorite}
-              className={`w-full sm:w-auto font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 border ${
-                isFavorited 
-                  ? 'bg-amber-500/20 text-amber-500 border-amber-500/50 hover:bg-amber-500/30' 
-                  : 'bg-zinc-800 hover:bg-zinc-700 text-amber-500 border-zinc-700'
-              }`}
-            >
-              <Star className={`w-5 h-5 ${isFavorited ? 'fill-amber-500' : ''}`} />
-              {isFavorited ? 'Favoritado' : 'Favoritar'}
-            </button>
-            {/* Tooltip Favoritar */}
-            <div className="absolute top-full right-0 mt-2 w-48 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/fav:opacity-100 group-hover/fav:visible transition-all z-50 pointer-events-none text-right">
-              {isFavorited ? 'Atualizar as configurações deste item no Dashboard.' : 'Salva esta configuração no Dashboard para acompanhar o lucro em tempo real.'}
-            </div>
-          </div>
+          <button 
+             onClick={handleSyncRecipePrices}
+             disabled={isSyncing}
+             className="hidden md:flex items-center gap-2 bg-surface-container-high px-4 py-2 rounded-lg text-sm font-semibold border border-outline-variant/20 hover:border-primary/50 transition-colors disabled:opacity-50"
+          >
+             <span className={`material-symbols-outlined text-sm ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
+             Atualizar Preços
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Configurações */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 shadow-sm">
-            <h3 className="text-lg font-semibold text-zinc-100 mb-4 flex items-center gap-2">
-              <Settings className="w-5 h-5 text-zinc-400" />
-              Configurações
-            </h3>
-            
+      <div className="grid grid-cols-12 gap-6 md:gap-8 mt-6">
+        {/* Left Panel: Configurações */}
+        <div className="col-span-12 xl:col-span-3 space-y-6">
+          <section className="bg-surface-container rounded-xl p-6 space-y-5">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="material-symbols-outlined text-secondary">tune</span>
+              <h4 className="font-bold text-sm tracking-wide uppercase text-secondary">Configurações</h4>
+            </div>
+
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Categoria</label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-100 focus:outline-none focus:border-amber-500"
-                  >
-                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Tier</label>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-on-surface-variant uppercase ml-1">Categoria</label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2.5 focus:ring-1 focus:ring-secondary text-on-surface px-3 outline-none"
+                >
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div className="flex gap-2">
+                <div className="flex-1 space-y-1.5">
+                  <label className="text-[11px] font-bold text-on-surface-variant uppercase ml-1">Tier</label>
                   <select
                     value={selectedTier}
                     onChange={(e) => setSelectedTier(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-100 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2.5 focus:ring-1 focus:ring-secondary text-on-surface px-3 outline-none"
                   >
                     {availableTiers.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Encantamento</label>
+                <div className="flex-1 space-y-1.5">
+                  <label className="text-[11px] font-bold text-on-surface-variant uppercase ml-1">Encantamento</label>
                   <select
                     value={selectedEnchantment}
                     onChange={(e) => setSelectedEnchantment(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-100 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2.5 focus:ring-1 focus:ring-secondary text-on-surface px-3 outline-none"
                   >
                     {availableEnchantments.map(e => <option key={e} value={e}>.{e}</option>)}
                   </select>
                 </div>
               </div>
-              <div>
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Item para Craftar</label>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-on-surface-variant uppercase ml-1">Item a Fabricar</label>
                 <select
                   value={selectedRecipeId}
                   onChange={(e) => setSelectedRecipeId(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-100 focus:outline-none focus:border-amber-500"
+                  className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2.5 focus:ring-1 focus:ring-secondary text-on-surface px-3 outline-none"
                 >
                   {availableRecipes.map(r => {
                     const i = ITEMS.find(item => item.id === r.itemId);
-                    const isFav = state.favorites.some(f => f.itemId === r.itemId);
-                    return <option key={r.itemId} value={r.itemId}>{isFav ? '★ ' : ''}{i?.name}</option>;
+                    return <option key={r.itemId} value={r.itemId}>{i?.name}</option>;
                   })}
                 </select>
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Quantidade</label>
+              <div className="space-y-1.5 pt-2 border-t border-outline-variant/10">
+                <label className="text-[11px] font-bold text-on-surface-variant uppercase ml-1">Quantity (Batch Size)</label>
                 <input
                   type="number"
                   min="1"
                   value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-100 focus:outline-none focus:border-amber-500"
+                  onChange={(e) => setQuantity(Number(e.target.value) || 1)}
+                  className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2.5 px-4 focus:ring-1 focus:ring-secondary font-bold text-on-surface outline-none"
                 />
               </div>
 
+              <div className="bg-surface-container-high p-4 rounded-xl flex items-center gap-4 border border-primary/20">
+                <div className="w-12 h-12 bg-surface-container-lowest rounded-lg flex items-center justify-center relative overflow-hidden shrink-0">
+                  <img src={`https://render.albiononline.com/v1/item/${selectedRecipeId}.png`} alt={item.name} className="w-10 h-10 z-10" />
+                  <div className="absolute bottom-0 right-0 bg-secondary px-1 text-[8px] font-bold text-on-secondary-fixed">{item.tier}.{item.enchantment}</div>
+                </div>
+                <div className="truncate">
+                  <p className="text-xs font-bold leading-tight truncate">{item.name}</p>
+                  <p className="text-[10px] text-on-surface-variant truncate">{item.category}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-surface-container rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between cursor-pointer" onClick={() => setUseFocus(!useFocus)}>
+              <div className="flex flex-col">
+                <label className="text-xs font-bold uppercase tracking-wider cursor-pointer">Use Focus</label>
+                <p className="text-[10px] text-primary font-medium">Cost: {Math.round(calculations.totalFocusCost).toLocaleString()} focus</p>
+              </div>
+              <div className={`w-10 h-5 rounded-full relative transition-colors ${useFocus ? 'bg-primary/20 border-primary/30' : 'bg-surface-container-highest border-outline-variant/30'} border`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full shadow-sm transition-all ${useFocus ? 'right-0.5 bg-primary' : 'left-0.5 bg-on-surface-variant'}`}></div>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <label className="text-[11px] font-bold text-on-surface-variant uppercase">Return Rate (RRR%)</label>
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                {rrrPresets.slice(0, 3).map((preset) => (
+                  <button
+                    key={preset.value}
+                    onClick={() => handleRrrClick(preset)}
+                    className={`text-[10px] py-1.5 rounded border transition-all truncate px-1 ${
+                      rrr === preset.value
+                        ? 'bg-primary/10 border-primary/50 text-primary'
+                        : 'bg-surface-container-high border-outline-variant/30 hover:border-primary/30 text-on-surface-variant'
+                    }`}
+                    title={preset.desc}
+                  >
+                    {preset.value}%
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  step="0.1"
+                  value={rrr}
+                  onChange={(e) => setRrr(Number(e.target.value) || 0)}
+                  className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2.5 px-4 focus:ring-1 focus:ring-secondary text-on-surface outline-none"
+                />
+                <span className="text-on-surface-variant font-bold text-sm">%</span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 pt-2">
+              <label className="text-[11px] font-bold text-on-surface-variant uppercase">Station Tax (Silver/Item)</label>
+              <input
+                type="number"
+                value={usageFee}
+                onChange={(e) => setUsageFee(Number(e.target.value) || 0)}
+                className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2.5 px-4 focus:ring-1 focus:ring-secondary text-on-surface outline-none"
+              />
+            </div>
+          </section>
+        </div>
+
+        {/* Middle + Right Panel: Resultados */}
+        <div className="col-span-12 xl:col-span-9 space-y-6 md:space-y-8">
+          {/* High-Fidelity Results Grid (Scaled for Batch) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-surface-container rounded-2xl p-4 md:p-6 flex flex-col justify-between h-32 md:h-36 relative overflow-hidden border-b-2 border-outline-variant/20">
+              <span className="text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">Custo Total ({quantity}x)</span>
               <div>
-                <div className="flex justify-between items-end mb-1 group/rrr relative">
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block flex items-center gap-1">
-                    Taxa de Retorno (RRR %)
-                    <Info className="w-3 h-3 text-zinc-600" />
-                  </label>
-                  {/* Tooltip RRR */}
-                  <div className="absolute bottom-full left-0 mb-2 w-64 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/rrr:opacity-100 group-hover/rrr:visible transition-all z-50 pointer-events-none">
-                    Porcentagem de recursos que voltam para você após o craft. Cidades com bônus e o uso de Foco aumentam este valor.
-                  </div>
+                <span className="text-xl md:text-2xl font-bold tight-tracking text-error">{Math.round(calculations.totalCost).toLocaleString()}</span>
+                <span className="text-xs md:text-sm text-on-surface-variant ml-1 font-medium">Silver</span>
+              </div>
+            </div>
+            <div className="bg-surface-container rounded-2xl p-4 md:p-6 flex flex-col justify-between h-32 md:h-36 relative overflow-hidden border-b-2 border-outline-variant/20">
+              <span className="text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">Receita Bruta ({quantity}x)</span>
+              <div>
+                <span className="text-xl md:text-2xl font-bold tight-tracking text-on-surface">{Math.round(calculations.grossRevenue).toLocaleString()}</span>
+                <span className="text-xs md:text-sm text-on-surface-variant ml-1 font-medium">Silver</span>
+              </div>
+            </div>
+            <div className={`bg-surface-container rounded-2xl p-4 md:p-6 flex flex-col justify-between h-32 md:h-36 relative overflow-hidden border-b-2 ${calculations.netProfit >= 0 ? 'border-primary/40' : 'border-error/40'}`}>
+              <div className="flex justify-between items-start">
+                <span className={`text-[10px] md:text-[11px] font-bold uppercase tracking-widest ${calculations.netProfit >= 0 ? 'text-primary' : 'text-error'}`}>Lucro Líquido</span>
+                <span className={`material-symbols-outlined ${calculations.netProfit >= 0 ? 'text-primary' : 'text-error'}`}>
+                  {calculations.netProfit >= 0 ? 'trending_up' : 'trending_down'}
+                </span>
+              </div>
+              <div>
+                <span className={`text-xl md:text-2xl font-bold tight-tracking ${calculations.netProfit >= 0 ? 'text-primary' : 'text-error'}`}>
+                  {calculations.netProfit >= 0 ? '+ ' : '- '}{Math.abs(Math.round(calculations.netProfit)).toLocaleString()}
+                </span>
+                <p className="text-[10px] text-on-surface-variant mt-1">Estimativa de mercado atual</p>
+              </div>
+            </div>
+            <div className="bg-surface-container rounded-2xl p-4 md:p-6 flex flex-col justify-between h-32 md:h-36 relative overflow-hidden border-b-2 border-secondary/40">
+              <div className="flex justify-between items-start">
+                <span className="text-[10px] md:text-[11px] font-bold text-secondary uppercase tracking-widest">ROI %</span>
+                <div className={`px-2 py-0.5 rounded font-bold text-[8px] md:text-[10px] ${calculations.roi > 30 ? 'bg-secondary/10 text-secondary' : calculations.roi > 0 ? 'bg-primary/10 text-primary' : 'bg-error/10 text-error'}`}>
+                  {calculations.roi > 30 ? 'EXCELENTE' : calculations.roi > 0 ? 'NO VERDE' : 'PREJUÍZO'}
                 </div>
-                <div className="relative mb-2">
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="100"
-                    value={rrr}
-                    onChange={(e) => setRrr(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 px-3 pr-8 text-zinc-100 focus:outline-none focus:border-amber-500"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 font-medium">%</span>
+              </div>
+              <div>
+                <span className={`text-2xl md:text-3xl font-bold tight-tracking ${calculations.roi > 0 ? 'text-secondary' : 'text-error'}`}>
+                  {calculations.roi.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Work Area */}
+          <div className="grid grid-cols-12 gap-6">
+            {/* Buying List & Inverse Config */}
+            <div className="col-span-12 xl:col-span-8 space-y-6">
+              
+              {/* Buying List */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-2">
+                  <h5 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-sm">shopping_cart</span>
+                    Lista de Compras (Lote)
+                  </h5>
+                  <button onClick={handleSyncRecipePrices} disabled={isSyncing} className="hidden md:flex text-[10px] font-bold text-on-surface-variant hover:text-primary uppercase items-center gap-1 disabled:opacity-50 transition-colors">
+                    <span className={`material-symbols-outlined text-sm ${isSyncing ? 'animate-spin' : ''}`}>sync</span> Atualizar Indiv.
+                  </button>
                 </div>
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {rrrPresets.map(preset => (
-                    <div key={preset.value} className="relative group">
-                      <button 
-                        onClick={() => handleRrrClick(preset)} 
-                        className={`text-[11px] font-medium bg-zinc-800 hover:bg-zinc-700 ${preset.color} px-2.5 py-1.5 rounded-md border border-zinc-700 transition-colors`}
-                      >
-                        {preset.label}
-                      </button>
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[200px] px-2.5 py-1.5 bg-zinc-800 text-zinc-200 text-xs rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 border border-zinc-700 pointer-events-none text-center">
-                        {preset.desc}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-700"></div>
+                
+                <div className="space-y-2">
+                  {calculations.materialsCostDetails.map((mat, idx) => (
+                    <div key={idx} className="bg-surface-container-low hover:bg-surface-container-high transition-colors p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-surface-container-lowest rounded-lg p-1 shrink-0 flex items-center justify-center">
+                          <img src={`https://render.albiononline.com/v1/item/${mat.itemId}.png`} alt={mat.name} className="max-w-full max-h-full" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold">{mat.name}</p>
+                          <p className="text-[10px] text-on-surface-variant font-medium">Qtd RRR: {Math.ceil(mat.effectiveAmount)} unidades</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-8 bg-surface-container sm:bg-transparent p-3 sm:p-0 rounded-lg">
+                        <div className="text-left sm:text-right">
+                          <p className="text-[10px] text-on-surface-variant uppercase font-bold mb-1">Custo Unitário</p>
+                          <CurrencyInput
+                            value={mat.price}
+                            onChange={(newValue) => updatePrice(mat.itemId, 'buy', newValue)}
+                            className="bg-transparent border-b border-outline-variant/30 text-sm font-semibold max-w-[80px] sm:max-w-[100px] text-on-surface focus:outline-none focus:border-secondary transition-colors px-1 text-left sm:text-right"
+                          />
+                        </div>
+                        <div className="text-right w-24">
+                          <p className="text-[10px] text-on-surface-variant uppercase font-bold mb-1">Custo Total</p>
+                          <p className="text-sm font-bold text-secondary">{Math.round(mat.cost).toLocaleString()}</p>
+                        </div>
                       </div>
                     </div>
                   ))}
-                </div>
-              </div>
-
-              <div className="group/fee relative">
-                <CurrencyInput
-                  label="Taxa da Estação (Prata)"
-                  value={usageFee}
-                  onChange={setUsageFee}
-                />
-                {/* Tooltip Taxa */}
-                <div className="absolute bottom-full left-0 mb-2 w-64 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/fee:opacity-100 group-hover/fee:visible transition-all z-50 pointer-events-none">
-                  Custo cobrado pela loja (estação de craft) por cada item fabricado.
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-zinc-950 rounded-lg border border-zinc-800 group/focus relative">
-                <div>
-                  <span className="text-sm font-semibold text-zinc-100 block flex items-center gap-1">
-                    Usar Foco
-                    <Info className="w-3 h-3 text-zinc-600" />
-                  </span>
-                  <span className="text-xs text-zinc-500">Custo: {focusCost * quantity} foco</span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" checked={useFocus} onChange={(e) => setUseFocus(e.target.checked)} />
-                  <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-                </label>
-                {/* Tooltip Foco */}
-                <div className="absolute bottom-full right-0 mb-2 w-64 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/focus:opacity-100 group-hover/focus:visible transition-all z-50 pointer-events-none text-right">
-                  O uso de Foco aumenta drasticamente a Taxa de Retorno (RRR), economizando recursos valiosos.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-zinc-400" />
-                Preços Rápidos
-              </h3>
-              <button
-                onClick={handleSyncRecipePrices}
-                disabled={isSyncing}
-                className="text-xs flex items-center gap-1.5 bg-amber-600/20 text-amber-500 hover:bg-amber-600/30 py-1.5 px-3 rounded-md transition-colors disabled:opacity-50"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                Sincronizar
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              {/* Item Final */}
-              <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-800">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-amber-500">{item?.name}</span>
-                  <span className="text-xs text-zinc-500 flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTimeAgo(state.prices[recipe.itemId]?.updatedAt)}</span>
-                </div>
-                <CurrencyInput
-                  label="Preço de Venda"
-                  value={state.prices[recipe.itemId]?.sell || 0}
-                  onChange={(val) => updatePrice(recipe.itemId, state.prices[recipe.itemId]?.buy || 0, val)}
-                  placeholder="0"
-                />
-              </div>
-
-              {/* Materiais */}
-              {recipe.materials.map(mat => {
-                const matItem = ITEMS.find(i => i.id === mat.itemId);
-                return (
-                  <div key={mat.itemId} className="p-3 bg-zinc-950 rounded-lg border border-zinc-800">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-zinc-300">{matItem?.name}</span>
-                      <span className="text-xs text-zinc-500 flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTimeAgo(state.prices[mat.itemId]?.updatedAt)}</span>
-                    </div>
-                    <CurrencyInput
-                      label="Preço de Compra"
-                      value={state.prices[mat.itemId]?.buy || 0}
-                      onChange={(val) => updatePrice(mat.itemId, val, state.prices[mat.itemId]?.sell || 0)}
-                      placeholder="0"
-                    />
-                  </div>
-                );
-              })}
-
-              {/* Diários */}
-              {recipe.journalId && (
-                <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-800 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-zinc-300">Diários</span>
-                    <span className="text-xs text-zinc-500 flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTimeAgo(state.prices[recipe.journalId]?.updatedAt)}</span>
-                  </div>
-                  <CurrencyInput
-                    label="Comprar Vazio"
-                    value={state.prices[recipe.journalId]?.buy || 0}
-                    onChange={(val) => updatePrice(recipe.journalId!, val, state.prices[recipe.journalId!]?.sell || 0)}
-                    placeholder="0"
-                  />
-                  <CurrencyInput
-                    label="Vender Cheio"
-                    value={state.prices[recipe.journalId.replace('_EMPTY', '_FULL')]?.sell || 0}
-                    onChange={(val) => updatePrice(recipe.journalId!.replace('_EMPTY', '_FULL'), state.prices[recipe.journalId!.replace('_EMPTY', '_FULL')]?.buy || 0, val)}
-                    placeholder="0"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Resultados */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-            <h3 className="text-xl font-bold text-zinc-100 mb-6 flex items-center gap-2">
-              <CalcIcon className="w-6 h-6 text-emerald-500" />
-              Resultados do Craft ({quantity}x)
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="bg-zinc-950 p-4 rounded-lg border border-zinc-800">
-                <span className="text-xs text-zinc-500 uppercase font-semibold tracking-wider block mb-1">Custo Total</span>
-                <span className="text-2xl font-mono text-red-400">{Math.round(calculations.totalCost).toLocaleString()}</span>
-              </div>
-              <div className="bg-zinc-950 p-4 rounded-lg border border-zinc-800">
-                <span className="text-xs text-zinc-500 uppercase font-semibold tracking-wider block mb-1">Receita Bruta</span>
-                <span className="text-2xl font-mono text-zinc-100">{Math.round(calculations.grossRevenue).toLocaleString()}</span>
-              </div>
-              <div className={`col-span-2 p-5 rounded-lg border ${calculations.netProfit >= 0 ? 'bg-emerald-950/30 border-emerald-900/50' : 'bg-red-950/30 border-red-900/50'}`}>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="text-xs text-zinc-400 uppercase font-semibold tracking-wider block mb-1">Lucro Líquido</span>
-                    <div className="flex items-center gap-2">
-                      {calculations.netProfit >= 0 ? <TrendingUp className="w-6 h-6 text-emerald-500" /> : <TrendingDown className="w-6 h-6 text-red-500" />}
-                      <span className={`text-4xl font-mono font-bold ${calculations.netProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {Math.round(calculations.netProfit).toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
                   
-                  <div className="flex gap-6 text-right">
-                    <div className="group/roi relative">
-                      <span className="text-xs text-zinc-400 uppercase font-semibold tracking-wider block mb-1 flex items-center gap-1 justify-end">
-                        ROI
-                        <Info className="w-3 h-3 text-zinc-600" />
-                      </span>
-                      <span className={`text-2xl font-mono font-bold ${calculations.roi > 20 ? 'text-emerald-400' : calculations.roi > 0 ? 'text-amber-400' : 'text-red-400'}`}>
-                        {calculations.roi.toFixed(1)}%
-                      </span>
-                      {/* Tooltip ROI */}
-                      <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/roi:opacity-100 group-hover/roi:visible transition-all z-50 pointer-events-none text-right">
-                        Retorno sobre Investimento. Quanto você ganha para cada 100 pratas gastas.
+                  {/* Journal Input Row */}
+                  {recipe.journalId && (
+                    <div className="bg-surface-container-low hover:bg-surface-container-high transition-colors p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-outline-variant/10">
+                      <div className="flex items-center gap-4 border-l-2 border-amber-500 pl-3">
+                        <div className="w-10 h-10 bg-surface-container-lowest rounded-lg p-1 shrink-0 flex items-center justify-center">
+                          <img src={`https://render.albiononline.com/v1/item/${recipe.journalId}.png`} alt="Journal" className="max-w-full max-h-full" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-amber-500">Diário (Vazio)</p>
+                          <p className="text-[10px] text-on-surface-variant font-medium">Requeridos: {Math.ceil(calculations.journalsFilled)} Un</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-8 bg-surface-container sm:bg-transparent p-3 sm:p-0 rounded-lg w-full sm:w-auto">
+                         <div className="text-left sm:text-right border-r border-outline-variant/30 pr-4">
+                          <p className="text-[10px] text-on-surface-variant uppercase font-bold mb-1">Preço Compra</p>
+                          <CurrencyInput
+                            value={state.prices[recipe.journalId]?.buy || 0}
+                            onChange={(newValue) => updatePrice(recipe.journalId, 'buy', newValue)}
+                            className="bg-transparent border-b border-outline-variant/30 text-sm font-semibold max-w-[80px] text-amber-500 focus:outline-none focus:border-amber-400 transition-colors px-1 text-left sm:text-right"
+                          />
+                        </div>
+                        <div className="text-left sm:text-right">
+                          <p className="text-[10px] text-on-surface-variant uppercase font-bold mb-1">Valor Cheio</p>
+                          <CurrencyInput
+                             value={state.prices[recipe.journalId.replace('_EMPTY', '_FULL')]?.sell || 0}
+                             onChange={(newValue) => updatePrice(recipe.journalId.replace('_EMPTY', '_FULL'), 'sell', newValue)}
+                             className="bg-transparent border-b border-outline-variant/30 text-sm font-semibold max-w-[80px] text-primary focus:outline-none focus:border-primary transition-colors px-1 text-left sm:text-right"
+                           />
+                        </div>
                       </div>
                     </div>
-                    {useFocus && (
-                      <div className="group/spf relative">
-                        <span className="text-xs text-zinc-400 uppercase font-semibold tracking-wider block mb-1 flex items-center gap-1 justify-end">
-                          Prata / Foco
-                          <Info className="w-3 h-3 text-zinc-600" />
-                        </span>
-                        <span className="text-2xl font-mono text-amber-400">{calculations.silverPerFocus.toFixed(2)}</span>
-                        {/* Tooltip SPF */}
-                        <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-zinc-900 border border-zinc-700 rounded shadow-xl text-[10px] text-zinc-400 opacity-0 invisible group-hover/spf:opacity-100 group-hover/spf:visible transition-all z-50 pointer-events-none text-right">
-                          Eficiência do seu Foco. Quanto de prata você lucra para cada ponto de foco gasto.
+                  )}
+                </div>
+              </div>
+
+              {/* Inverse Calculation */}
+              <div className="mt-8 bg-surface-container-low border border-outline-variant/10 rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="material-symbols-outlined text-tertiary">inventory_2</span>
+                  <h5 className="text-sm font-bold uppercase tracking-widest text-on-surface">Cálculo Inverso (Provisão)</h5>
+                </div>
+                <p className="text-[11px] text-on-surface-variant mb-6 italic">Informe quantos recursos você já possui no inventário para simular a capacidade máxima de fabricação.</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    {recipe.materials.map((mat, idx) => {
+                      const matItem = ITEMS.find(i => i.id === mat.itemId);
+                      const resourcesNeededPerItem = mat.amount * (1 - calculations.rrr);
+                      return (
+                        <div key={idx} className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-on-surface-variant uppercase ml-1">{matItem?.name} em Inventário</label>
+                          <input 
+                            type="number" 
+                            min="0"
+                            placeholder="Ex: 500" 
+                            className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2.5 px-4 focus:ring-1 focus:ring-tertiary text-on-surface outline-none"
+                            onChange={(e) => {
+                              const available = parseInt(e.target.value) || 0;
+                              const maxItems = Math.floor(available / resourcesNeededPerItem);
+                              const resultEl = document.getElementById(`inverse-result-${idx}`);
+                              const topResultEl = document.getElementById('inverse-result-top');
+                              if (resultEl) resultEl.innerText = `Rende: ~${maxItems} crafts`;
+                              
+                              // Check all inputs to find limiting factor
+                              let limit = Infinity;
+                              recipe.materials.forEach((m, i) => {
+                                const inputEl = document.querySelectorAll('input[placeholder="Ex: 500"]')[i];
+                                if (inputEl) {
+                                  const val = parseInt(inputEl.value) || 0;
+                                  const req = m.amount * (1 - calculations.rrr);
+                                  limit = Math.min(limit, Math.floor(val / req));
+                                }
+                              });
+                              if (topResultEl && limit !== Infinity) topResultEl.innerText = `${limit}`;
+                            }}
+                          />
+                          <p id={`inverse-result-${idx}`} className="text-[10px] text-tertiary font-bold ml-1 mt-1 block"></p>
                         </div>
+                      )
+                    })}
+                  </div>
+                  
+                  <div className="bg-surface-container-high border border-outline-variant/20 flex flex-col items-center justify-center rounded-2xl p-6">
+                    <div className="text-center">
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Capacidade de Craft</p>
+                      <p className="text-4xl font-bold text-tertiary tight-tracking flex items-baseline justify-center gap-2">
+                         <span id="inverse-result-top">0</span> 
+                         <span className="text-base font-normal opacity-70">Itens</span>
+                      </p>
+                      <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-on-surface-variant bg-surface-container-lowest px-3 py-1.5 rounded-full border border-outline-variant/10 max-w-[200px] mx-auto text-center">
+                        <span className="material-symbols-outlined text-[14px]">info</span>
+                        Limitado pelo recurso que preencher primeiro.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Details & Breakdown */}
+            <div className="col-span-12 xl:col-span-4 space-y-6">
+              <div className="bg-surface-container-low rounded-xl p-6 space-y-6 border border-outline-variant/10 shadow-lg relative overflow-hidden">
+                {/* Background flare */}
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <h5 className="text-sm font-bold uppercase tracking-widest flex items-center justify-between gap-2 relative z-10">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-secondary text-sm">analytics</span>
+                    Detalhamento
+                  </div>
+                  <div className="text-[10px] bg-secondary/20 text-secondary px-2 py-0.5 rounded font-bold">LOTE ({quantity}x)</div>
+                </h5>
+                
+                <div className="space-y-4 relative z-10">
+                  {calculations.journalsFilled > 0 && (
+                     <div className="flex justify-between items-center text-xs">
+                      <span className="text-on-surface-variant">Diários Preenchidos</span>
+                      <span className="font-bold text-primary">{Math.abs(calculations.journalsFilled).toFixed(2)} un</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-on-surface-variant">Materiais (c/ RRR)</span>
+                    <span className="font-bold text-error">- {Math.round(calculations.totalMaterialCost).toLocaleString()}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-on-surface-variant">Taxa de Estação</span>
+                    <span className="font-bold text-error">- {Math.round(calculations.feeCost).toLocaleString()}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-on-surface-variant">Taxa de Mercado ({(marketTax * 100).toFixed(1)}%)</span>
+                    <span className="font-bold text-error">- {Math.round(calculations.taxCost).toLocaleString()}</span>
+                  </div>
+
+                  <div className="pt-4 border-t border-outline-variant/20 flex justify-between items-center">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold uppercase text-secondary">Lucro com Diários</span>
+                      <span className="text-[10px] text-on-surface-variant">{calculations.journalProfit >= 0 ? 'Total ganho' : 'Prejuízo na revenda'}</span>
+                    </div>
+                    <span className={`text-lg font-bold ${calculations.journalProfit >= 0 ? 'text-primary' : 'text-error'}`}>
+                      {calculations.journalProfit >= 0 ? '+' : ''}{Math.round(calculations.journalProfit).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-3 pt-4 border-t border-outline-variant/20 relative z-10">
+                  <div className="flex flex-col gap-2">
+                     <label className="text-[10px] font-bold text-on-surface-variant uppercase ml-1">Preço de Venda do Item:</label>
+                     <CurrencyInput
+                        value={state.prices[selectedRecipeId]?.sell || 0}
+                        onChange={(newValue) => updatePrice(selectedRecipeId, 'sell', newValue)}
+                        className="w-full bg-surface-container-highest border border-outline-variant/20 rounded-lg py-2.5 px-4 text-sm font-bold text-on-surface outline-none focus:border-secondary transition-colors text-right"
+                      />
+                  </div>
+                  <button 
+                    onClick={handleSaveFavorite}
+                    className="w-full cta-gradient py-3 mt-2 rounded-lg font-bold text-on-primary text-sm shadow-lg shadow-primary/20 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                  >
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                    SALVAR FAVORITO
+                  </button>
+
+                  <div className="flex gap-2">
+                    <select
+                      value={selectedGroup}
+                      onChange={(e) => {
+                        if (e.target.value === 'novo') {
+                          setIsAddingGroup(true);
+                        } else {
+                          setSelectedGroup(e.target.value);
+                          setIsAddingGroup(false);
+                        }
+                      }}
+                      className="flex-1 bg-surface-container-lowest border-none outline-none rounded-lg py-2 px-3 text-xs text-on-surface mt-2 focus:ring-1 focus:ring-secondary"
+                    >
+                      {state.groups.map(g => (
+                        <option key={g} value={g}>{g}</option>
+                      ))}
+                      <option value="novo" className="font-bold text-primary">+ Novo Grupo</option>
+                    </select>
+
+                    {isAddingGroup && (
+                      <div className="flex flex-1 items-center gap-1 mt-2">
+                        <input
+                          type="text"
+                          value={newGroupName}
+                          onChange={(e) => setNewGroupName(e.target.value)}
+                          placeholder="Nome..."
+                          className="w-full bg-surface-container-lowest outline-none border-none rounded-lg py-2 px-2 text-xs text-on-surface focus:ring-1 focus:ring-secondary"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleAddGroup();
+                            if (e.key === 'Escape') setIsAddingGroup(false);
+                          }}
+                        />
+                        <button onClick={handleAddGroup} className="bg-primary hover:bg-primary-container text-on-primary p-2 rounded-lg transition-colors flex items-center justify-center">
+                           <span className="material-symbols-outlined text-[16px]">add</span>
+                        </button>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider mb-2">Detalhamento</h4>
               
-              {calculations.journalsFilled > 0 && (
-                <div className="flex justify-between text-sm py-2 border-b border-zinc-800/50 bg-zinc-950/50 px-3 rounded-lg mb-4">
-                  <span className="text-zinc-300 font-medium">Diários Preenchidos</span>
-                  <span className="font-mono text-amber-400 font-bold">{calculations.journalsFilled.toFixed(2)} un</span>
-                </div>
-              )}
-
-              <div className="flex justify-between text-sm py-2 border-b border-zinc-800/50">
-                <span className="text-zinc-400">Materiais (c/ {Math.round(calculations.rrr * 100)}% RRR)</span>
-                <span className="font-mono text-red-400">-{Math.round(calculations.totalMaterialCost).toLocaleString()}</span>
-              </div>
-              
-              <div className="flex justify-between text-sm py-2 border-b border-zinc-800/50">
-                <span className="text-zinc-400">Taxa da Estação</span>
-                <span className="font-mono text-red-400">-{Math.round(calculations.feeCost).toLocaleString()}</span>
-              </div>
-
-              <div className="flex justify-between text-sm py-2 border-b border-zinc-800/50">
-                <span className="text-zinc-400">Taxa de Mercado ({(marketTax * 100).toFixed(1)}%)</span>
-                <span className="font-mono text-red-400">-{Math.round(calculations.taxCost).toLocaleString()}</span>
-              </div>
-
-              {calculations.journalProfit > 0 && (
-                <div className="flex justify-between text-sm py-2 border-b border-zinc-800/50">
-                  <span className="text-zinc-400">Lucro com Diários</span>
-                  <span className="font-mono text-emerald-400">+{Math.round(calculations.journalProfit).toLocaleString()}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-            <h3 className="text-lg font-bold text-zinc-100 mb-4 flex items-center gap-2">
-              <Book className="w-5 h-5 text-amber-500" />
-              Lista de Compras
-            </h3>
-            <div className="space-y-3">
-              {calculations.materialsCostDetails.map((mat, idx) => (
-                <div key={idx} className="flex justify-between items-center p-3 bg-zinc-950 rounded-lg border border-zinc-800">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-zinc-300">{mat.name}</span>
-                    <span className="text-xs text-zinc-500">{mat.amount * quantity} un (Base) → {Math.ceil(mat.effectiveAmount)} un (com RRR)</span>
-                  </div>
-                  <span className="font-mono text-amber-400">-{Math.round(mat.cost).toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-            <h3 className="text-lg font-bold text-zinc-100 mb-4 flex items-center gap-2">
-              <RefreshCw className="w-5 h-5 text-blue-500" />
-              Cálculo Inverso
-            </h3>
-            <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-lg">
-              <p className="text-sm text-zinc-400 mb-4">Descubra quantos itens você pode fazer com a quantidade de recursos que possui.</p>
-              
-              <div className="space-y-4">
-                {recipe.materials.map((mat, idx) => {
-                  const matItem = ITEMS.find(i => i.id === mat.itemId);
-                  // Formula: Max Items = Available Resources / (Material Per Item * (1 - RRR))
-                  const resourcesNeededPerItem = mat.amount * (1 - (rrr/100));
-                  return (
-                    <div key={idx} className="flex flex-col gap-2">
-                      <label className="text-xs font-semibold text-zinc-300">{matItem?.name} Disponível</label>
-                      <div className="flex gap-2 items-center">
-                        <input
-                          type="number"
-                          min="0"
-                          placeholder="Ex: 999"
-                          id={`inverse-calc-${idx}`}
-                          className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-100 focus:outline-none focus:border-amber-500"
-                          onChange={(e) => {
-                            const available = parseInt(e.target.value) || 0;
-                            const maxItems = Math.floor(available / resourcesNeededPerItem);
-                            const resultEl = document.getElementById(`inverse-result-${idx}`);
-                            if (resultEl) {
-                              resultEl.innerText = `Rende: ~${maxItems} crafts`;
-                            }
-                          }}
-                        />
-                        <span id={`inverse-result-${idx}`} className="text-sm font-bold text-emerald-400 min-w-[120px]">
-                          Rende: 0 crafts
-                        </span>
-                      </div>
+              {/* Quick Prices Component Equivalent */}
+              {useFocus && (
+                 <div className="bg-surface-container-low rounded-xl p-6 space-y-4 border border-outline-variant/10 shadow-sm flex flex-col items-center justify-center">
+                    <div className="flex justify-between items-center w-full mb-2">
+                      <span className="text-[10px] font-bold uppercase text-on-surface-variant flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">bolt</span> Foco Restante Info
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="text-center w-full">
+                       <p className="text-xs text-on-surface-variant font-medium mb-1">Prata Por Foco</p>
+                       <span className="text-3xl font-bold tight-tracking text-secondary">{calculations.silverPerFocus.toFixed(2)}</span>
+                       <p className="text-[10px] text-tertiary mt-2">Você precisaria de {(10000 / (calculations.silverPerFocus || 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })} foco para investir 10K prata.</p>
+                    </div>
+                </div>
+              )}
             </div>
           </div>
-
         </div>
       </div>
     </div>
