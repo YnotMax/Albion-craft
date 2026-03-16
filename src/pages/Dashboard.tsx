@@ -34,10 +34,11 @@ export const Dashboard: React.FC = () => {
       useFocus: (fav as any).useFocus || false,
       usageFee: (fav as any).usageFee || 0,
       focusCost: (fav as any).focusCost || 0,
+      quantity: (fav as any).quantity || 1,
       prices: {}
     };
 
-    const { rrr, useFocus, usageFee, prices } = config;
+    const { rrr, useFocus, usageFee, prices, quantity = 1 } = config;
     const currentRrr = rrr / 100;
     
     let totalMaterialCost = 0;
@@ -45,11 +46,11 @@ export const Dashboard: React.FC = () => {
       // Use current state prices for real-time tracking, fallback to snapshot if 0
       const currentPrice = state.prices[mat.itemId]?.buy;
       const price = currentPrice > 0 ? currentPrice : (prices[mat.itemId]?.buy || 0);
-      const effectiveAmount = mat.amount * (1 - currentRrr);
+      const effectiveAmount = mat.amount * (1 - currentRrr) * quantity;
       totalMaterialCost += effectiveAmount * price;
     });
 
-    const feeCost = usageFee;
+    const feeCost = usageFee * quantity;
     
     let journalProfit = 0;
     if (recipe.journalId) {
@@ -62,19 +63,19 @@ export const Dashboard: React.FC = () => {
       
       const journalCapacity = recipe.fame * 10;
       const journalsFilled = recipe.fame / journalCapacity;
-      journalProfit = journalsFilled * (fullPrice - emptyPrice);
+      journalProfit = journalsFilled * (fullPrice - emptyPrice) * quantity;
     }
 
     const currentItemSellPrice = state.prices[item.id]?.sell;
     const itemSellPrice = currentItemSellPrice > 0 ? currentItemSellPrice : (prices[item.id]?.sell || 0);
-    const grossRevenue = itemSellPrice;
+    const grossRevenue = itemSellPrice * quantity;
     const taxCost = grossRevenue * 0.065; // 6.5% tax
     const netRevenue = grossRevenue - taxCost;
     
     const totalCost = totalMaterialCost + feeCost;
     const netProfit = netRevenue - totalCost + journalProfit;
     const roi = totalCost > 0 ? (netProfit / totalCost) * 100 : 0;
-    const focusCost = calculateFocusCost(recipe, item, state.specs);
+    const focusCost = calculateFocusCost(recipe, item, state.specs) * quantity;
     const silverPerFocus = useFocus && focusCost > 0 ? netProfit / focusCost : 0;
 
     return {
@@ -88,6 +89,7 @@ export const Dashboard: React.FC = () => {
       roi,
       focusCost,
       silverPerFocus,
+      quantity,
       timestamp: fav.timestamp || Date.now(),
       group: fav.group || 'Geral'
     };
@@ -283,7 +285,7 @@ export const Dashboard: React.FC = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-zinc-100">{calc.item.name}</h3>
+                      <h3 className="font-semibold text-zinc-100">{calc.item.name} {calc.quantity > 1 ? `(${calc.quantity}x)` : ''}</h3>
                       {isBestProfit && <span className="text-[9px] bg-emerald-500 text-zinc-950 px-1.5 py-0.5 rounded font-bold uppercase">Melhor Lucro</span>}
                       {isBestRoi && <span className="text-[9px] bg-amber-500 text-zinc-950 px-1.5 py-0.5 rounded font-bold uppercase">Melhor ROI</span>}
                     </div>

@@ -42,6 +42,7 @@ const defaultState: AppState = {
         rrr: 15.2,
         useFocus: false,
         focusCost: 0,
+        quantity: 1,
         prices: {}
       }
     },
@@ -54,6 +55,7 @@ const defaultState: AppState = {
         rrr: 24.8,
         useFocus: true,
         focusCost: 0,
+        quantity: 1,
         prices: {}
       }
     }
@@ -81,6 +83,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!parsed.buyCity) parsed.buyCity = 'Caerleon';
         if (!parsed.sellCity) parsed.sellCity = 'Caerleon';
         if (!parsed.groups) parsed.groups = ['Geral', 'Robes', 'Botas'];
+        if (parsed.favorites) {
+          parsed.favorites = parsed.favorites.map((f: any) => ({
+            ...f,
+            configSnapshot: {
+              ...f.configSnapshot,
+              quantity: f.configSnapshot.quantity || 1
+            }
+          }));
+        }
+        if (parsed.calculatorState && !parsed.calculatorState.quantity) {
+          parsed.calculatorState.quantity = 1;
+        }
         return parsed;
       } catch (e) {
         console.error('Failed to parse saved state', e);

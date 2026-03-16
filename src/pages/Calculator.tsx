@@ -4,7 +4,7 @@ import { ITEMS, RECIPES, SPEC_NODES } from '../constants';
 import { CurrencyInput } from '../components/CurrencyInput';
 import { MarketSelector } from '../components/MarketSelector';
 import { formatTimeAgo } from '../utils/format';
-import { Calculator as CalcIcon, Save, Star, TrendingUp, TrendingDown, Settings, CheckCircle2, RefreshCw, Clock, Info, AlertCircle } from 'lucide-react';
+import { Calculator as CalcIcon, Save, Star, TrendingUp, TrendingDown, Settings, CheckCircle2, RefreshCw, Clock, Info, AlertCircle, Book } from 'lucide-react';
 
 import { calculateFocusCost } from '../utils/focus';
 
@@ -24,7 +24,8 @@ export const Calculator: React.FC = () => {
     selectedRecipeId: '',
     usageFee: 500,
     rrr: 15.2,
-    useFocus: false
+    useFocus: false,
+    quantity: 1
   };
 
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCalcState.selectedCategory || categories[0] || '');
@@ -83,6 +84,7 @@ export const Calculator: React.FC = () => {
   const [usageFee, setUsageFee] = useState<number>(initialCalcState.usageFee);
   const [rrr, setRrr] = useState<number>(initialCalcState.rrr);
   const [useFocus, setUseFocus] = useState<boolean>(initialCalcState.useFocus);
+  const [quantity, setQuantity] = useState<number>(initialCalcState.quantity || 1);
 
   // Save state to AppContext on change
   useEffect(() => {
@@ -93,9 +95,10 @@ export const Calculator: React.FC = () => {
       selectedRecipeId,
       usageFee,
       rrr,
-      useFocus
+      useFocus,
+      quantity
     });
-  }, [selectedCategory, selectedTier, selectedEnchantment, selectedRecipeId, usageFee, rrr, useFocus]);
+  }, [selectedCategory, selectedTier, selectedEnchantment, selectedRecipeId, usageFee, rrr, useFocus, quantity]);
   const [marketTax, setMarketTax] = useState<number>(0.065); // 6.5% default
   const [showToast, setShowToast] = useState(false);
   const [rrrToast, setRrrToast] = useState<string | null>(null);
@@ -139,14 +142,14 @@ export const Calculator: React.FC = () => {
       const matItem = ITEMS.find(i => i.id === mat.itemId);
       const price = state.prices[mat.itemId]?.buy || 0;
       // Effective amount considering RRR
-      const effectiveAmount = mat.amount * (1 - currentRrr);
+      const effectiveAmount = mat.amount * (1 - currentRrr) * quantity;
       const cost = effectiveAmount * price;
       totalMaterialCost += cost;
       return { ...mat, name: matItem?.name, price, effectiveAmount, cost };
     });
 
     // Usage fee is based on item value, but for MVP we'll just use a flat fee per item crafted
-    const feeCost = usageFee;
+    const feeCost = usageFee * quantity;
     
     // Journal calculation
     let journalProfit = 0;
@@ -161,11 +164,11 @@ export const Calculator: React.FC = () => {
       const journalCapacity = recipe.fame * 10; 
       journalsFilled = recipe.fame / journalCapacity; // This will always be 0.1 for robes, but keeps the formula dynamic
       
-      journalProfit = journalsFilled * (fullPrice - emptyPrice);
+      journalProfit = journalsFilled * (fullPrice - emptyPrice) * quantity;
     }
 
     const itemSellPrice = state.prices[item.id]?.sell || 0;
-    const grossRevenue = itemSellPrice;
+    const grossRevenue = itemSellPrice * quantity;
     const taxCost = grossRevenue * marketTax;
     const netRevenue = grossRevenue - taxCost;
     
@@ -189,9 +192,10 @@ export const Calculator: React.FC = () => {
       netProfit,
       silverPerFocus,
       roi,
-      journalsFilled
+      journalsFilled: journalsFilled * quantity,
+      totalFocusCost: focusCost * quantity
     };
-  }, [recipe, item, rrr, useFocus, state.prices, usageFee, marketTax, focusCost]);
+  }, [recipe, item, rrr, useFocus, quantity, state.prices, usageFee, marketTax, focusCost]);
 
   const handleSaveFavorite = () => {
     if (!recipe) return;
@@ -225,6 +229,7 @@ export const Calculator: React.FC = () => {
         rrr,
         useFocus,
         focusCost,
+        quantity,
         prices: snapshotPrices
       }
     });
@@ -433,6 +438,17 @@ export const Calculator: React.FC = () => {
               </div>
 
               <div>
+                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Quantidade</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-100 focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div>
                 <div className="flex justify-between items-end mb-1 group/rrr relative">
                   <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block flex items-center gap-1">
                     Taxa de Retorno (RRR %)
@@ -491,7 +507,7 @@ export const Calculator: React.FC = () => {
                     Usar Foco
                     <Info className="w-3 h-3 text-zinc-600" />
                   </span>
-                  <span className="text-xs text-zinc-500">Custo: {focusCost} foco</span>
+                  <span className="text-xs text-zinc-500">Custo: {focusCost * quantity} foco</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={useFocus} onChange={(e) => setUseFocus(e.target.checked)} />
@@ -585,7 +601,7 @@ export const Calculator: React.FC = () => {
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
             <h3 className="text-xl font-bold text-zinc-100 mb-6 flex items-center gap-2">
               <CalcIcon className="w-6 h-6 text-emerald-500" />
-              Resultados do Craft (1x)
+              Resultados do Craft ({quantity}x)
             </h3>
 
             <div className="grid grid-cols-2 gap-4 mb-8">
@@ -674,6 +690,68 @@ export const Calculator: React.FC = () => {
               )}
             </div>
           </div>
+
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-zinc-100 mb-4 flex items-center gap-2">
+              <Book className="w-5 h-5 text-amber-500" />
+              Lista de Compras
+            </h3>
+            <div className="space-y-3">
+              {calculations.materialsCostDetails.map((mat, idx) => (
+                <div key={idx} className="flex justify-between items-center p-3 bg-zinc-950 rounded-lg border border-zinc-800">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-zinc-300">{mat.name}</span>
+                    <span className="text-xs text-zinc-500">{mat.amount * quantity} un (Base) → {Math.ceil(mat.effectiveAmount)} un (com RRR)</span>
+                  </div>
+                  <span className="font-mono text-amber-400">-{Math.round(mat.cost).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-zinc-100 mb-4 flex items-center gap-2">
+              <RefreshCw className="w-5 h-5 text-blue-500" />
+              Cálculo Inverso
+            </h3>
+            <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-lg">
+              <p className="text-sm text-zinc-400 mb-4">Descubra quantos itens você pode fazer com a quantidade de recursos que possui.</p>
+              
+              <div className="space-y-4">
+                {recipe.materials.map((mat, idx) => {
+                  const matItem = ITEMS.find(i => i.id === mat.itemId);
+                  // Formula: Max Items = Available Resources / (Material Per Item * (1 - RRR))
+                  const resourcesNeededPerItem = mat.amount * (1 - (rrr/100));
+                  return (
+                    <div key={idx} className="flex flex-col gap-2">
+                      <label className="text-xs font-semibold text-zinc-300">{matItem?.name} Disponível</label>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="Ex: 999"
+                          id={`inverse-calc-${idx}`}
+                          className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-100 focus:outline-none focus:border-amber-500"
+                          onChange={(e) => {
+                            const available = parseInt(e.target.value) || 0;
+                            const maxItems = Math.floor(available / resourcesNeededPerItem);
+                            const resultEl = document.getElementById(`inverse-result-${idx}`);
+                            if (resultEl) {
+                              resultEl.innerText = `Rende: ~${maxItems} crafts`;
+                            }
+                          }}
+                        />
+                        <span id={`inverse-result-${idx}`} className="text-sm font-bold text-emerald-400 min-w-[120px]">
+                          Rende: 0 crafts
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
