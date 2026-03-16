@@ -13,7 +13,7 @@ import { Calculator } from './pages/Calculator';
 import { About } from './pages/About';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('calculator');
 
   const renderContent = () => {
     switch (activeTab) {

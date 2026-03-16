@@ -12,10 +12,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
   const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
 
   const tabs = [
+    { id: 'calculator', label: 'Calculadora', icon: 'calculate' },
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { id: 'specs', label: 'Specialization', icon: 'military_tech' },
-    { id: 'prices', label: 'Prices', icon: 'payments' },
-    { id: 'calculator', label: 'Calculator', icon: 'calculate' },
+    { id: 'specs', label: 'Especializações', icon: 'military_tech' },
+    { id: 'prices', label: 'Preços', icon: 'payments' },
     { id: 'about', label: 'Sobre o Projeto', icon: 'info' },
   ];
 

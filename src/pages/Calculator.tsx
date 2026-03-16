@@ -304,74 +304,86 @@ export const Calculator: React.FC = () => {
         </div>
       )}
 
-      {/* Hero Title & Actions */}
-      <div className="flex flex-col gap-1">
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+      {/* Hero Title & Actions Header */}
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-surface-container-low/50 p-6 rounded-2xl border border-outline-variant/10">
           <div>
-            <h3 className="text-2xl md:text-3xl font-bold tight-tracking text-on-surface">Calculadora de Craft</h3>
-            <p className="text-on-surface-variant text-sm mt-1">Simule lucros e otimize o uso do seu foco em tempo real.</p>
+            <h3 className="text-2xl md:text-4xl font-black tight-tracking text-on-surface flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary text-3xl md:text-4xl">calculate</span>
+              Calculadora de Craft
+            </h3>
+            <p className="text-on-surface-variant text-sm md:text-base mt-2 font-medium">
+              Simule lucros e otimize o uso do seu foco em tempo real.
+            </p>
           </div>
           
-          {/* Action Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3 w-full xl:w-auto">
-            {/* Save Favorite Group */}
-            <div className="flex flex-1 sm:flex-none items-center gap-2 bg-surface-container-low border border-outline-variant/10 p-1.5 rounded-lg justify-between sm:justify-start">
-              <div className="flex items-center flex-1 sm:flex-none">
-                <select
-                  value={selectedGroup}
-                  onChange={(e) => {
-                    if (e.target.value === 'novo') {
-                      setIsAddingGroup(true);
-                    } else {
-                      setSelectedGroup(e.target.value);
-                      setIsAddingGroup(false);
-                    }
-                  }}
-                  className="bg-transparent border-none outline-none text-xs font-semibold text-on-surface focus:ring-1 focus:ring-secondary py-1 pl-2 w-28 md:w-32 truncate"
-                >
-                  {state.groups.map(g => (
-                    <option key={g} value={g}>{g}</option>
-                  ))}
-                  <option value="novo" className="font-bold text-primary">+ Novo Grupo</option>
-                </select>
-                
-                {isAddingGroup && (
-                  <div className="flex items-center gap-1 bg-surface-container-highest px-2 py-0.5 rounded-md ml-2 flex-1 sm:flex-none">
-                    <input
-                      type="text"
-                      value={newGroupName}
-                      onChange={(e) => setNewGroupName(e.target.value)}
-                      placeholder="Nome..."
-                      className="w-20 md:w-24 bg-transparent outline-none border-none py-1 text-xs text-on-surface"
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleAddGroup();
-                        if (e.key === 'Escape') setIsAddingGroup(false);
-                      }}
-                    />
-                    <button onClick={handleAddGroup} className="text-primary hover:bg-primary/10 rounded p-1 transition-colors flex items-center justify-center">
-                       <span className="material-symbols-outlined text-[14px]">add</span>
-                    </button>
-                  </div>
-                )}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+            {/* Unified Action Group */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-surface-container rounded-xl p-2 border border-outline-variant/20 shadow-inner">
+              
+              <div className="flex items-center gap-2 px-2 py-1">
+                <span className="material-symbols-outlined text-on-surface-variant text-lg">folder</span>
+                <div className="relative">
+                  <select
+                    value={selectedGroup}
+                    onChange={(e) => {
+                      if (e.target.value === 'novo') {
+                        setIsAddingGroup(true);
+                      } else {
+                        setSelectedGroup(e.target.value);
+                        setIsAddingGroup(false);
+                      }
+                    }}
+                    className="bg-transparent border-none outline-none text-sm font-bold text-on-surface focus:ring-0 cursor-pointer pr-6 appearance-none"
+                  >
+                    {state.groups.map(g => (
+                      <option key={g} value={g} className="bg-surface-container-high text-on-surface">{g}</option>
+                    ))}
+                    <option value="novo" className="bg-surface-container-high text-primary font-bold">+ Novo Grupo</option>
+                  </select>
+                  <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-sm">expand_more</span>
+                </div>
               </div>
+
+              {isAddingGroup && (
+                <div className="flex items-center gap-1 bg-surface-container-highest px-3 py-1.5 rounded-lg border border-primary/30">
+                  <input
+                    type="text"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    placeholder="Nome do grupo..."
+                    className="w-24 md:w-32 bg-transparent outline-none border-none text-sm font-medium text-on-surface placeholder:text-on-surface-variant/50"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleAddGroup();
+                      if (e.key === 'Escape') setIsAddingGroup(false);
+                    }}
+                  />
+                  <button onClick={handleAddGroup} className="bg-primary text-on-primary rounded p-0.5 hover:bg-primary/90 transition-colors">
+                     <span className="material-symbols-outlined text-[18px]">add</span>
+                  </button>
+                </div>
+              )}
+
+              <div className="h-6 w-px bg-outline-variant/20 hidden sm:block mx-1"></div>
 
               <button 
                 onClick={handleSaveFavorite}
-                className="cta-gradient px-4 py-1.5 rounded-md font-bold text-on-primary text-xs tracking-wide shadow-sm shadow-primary/20 flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity whitespace-nowrap"
+                className="cta-gradient px-6 py-2.5 rounded-lg font-black text-on-primary text-xs uppercase tracking-wider shadow-lg shadow-primary/30 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                Salvar Favorito
+                <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
+                Salvar nos Favoritos
               </button>
             </div>
 
             <button 
                onClick={handleSyncRecipePrices}
                disabled={isSyncing}
-               className="flex items-center justify-center gap-2 bg-surface-container-high px-4 py-2.5 rounded-lg text-sm font-semibold border border-outline-variant/20 hover:border-primary/50 transition-colors disabled:opacity-50"
+               title="Os preços são atualizados pela API de Albion Online Markets"
+               className="flex items-center justify-center gap-2 bg-surface-container-high hover:bg-surface-container-highest px-5 py-3 rounded-xl text-sm font-bold border border-outline-variant/30 hover:border-primary/50 transition-all disabled:opacity-50 shadow-sm"
             >
-               <span className={`material-symbols-outlined text-sm ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
-               <span className="sm:hidden xl:block">Atualizar Preços</span>
+               <span className={`material-symbols-outlined text-lg ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
+               <span>Atualizar Preço</span>
             </button>
           </div>
         </div>
@@ -571,8 +583,13 @@ export const Calculator: React.FC = () => {
                     <span className="material-symbols-outlined text-primary text-sm">shopping_cart</span>
                     Lista de Compras (Lote)
                   </h5>
-                  <button onClick={handleSyncRecipePrices} disabled={isSyncing} className="hidden md:flex text-[10px] font-bold text-on-surface-variant hover:text-primary uppercase items-center gap-1 disabled:opacity-50 transition-colors">
-                    <span className={`material-symbols-outlined text-sm ${isSyncing ? 'animate-spin' : ''}`}>sync</span> Atualizar Indiv.
+                   <button 
+                    onClick={handleSyncRecipePrices} 
+                    disabled={isSyncing} 
+                    title="Os preços são atualizados pela API de Albion Online Markets"
+                    className="hidden md:flex text-[10px] font-bold text-on-surface-variant hover:text-primary uppercase items-center gap-1 disabled:opacity-50 transition-colors"
+                  >
+                    <span className={`material-symbols-outlined text-sm ${isSyncing ? 'animate-spin' : ''}`}>sync</span> Atualizar Preço
                   </button>
                 </div>
                 
@@ -590,12 +607,12 @@ export const Calculator: React.FC = () => {
                       </div>
                       
                       <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-8 bg-surface-container sm:bg-transparent p-3 sm:p-0 rounded-lg">
-                        <div className="text-left sm:text-right">
-                          <p className="text-[10px] text-on-surface-variant uppercase font-bold mb-1">Custo Unitário</p>
+                        <div className="text-left sm:text-right bg-surface-container-highest/30 p-3 rounded-xl border border-outline-variant/10">
+                          <p className="text-[10px] text-on-surface-variant uppercase font-black mb-1.5 tracking-tighter">Custo Unitário</p>
                           <CurrencyInput
                             value={mat.price}
                             onChange={(newValue) => updatePrice(mat.itemId, 'buy', newValue)}
-                            className="bg-transparent border-b border-outline-variant/30 text-sm font-semibold w-[100px] sm:w-[140px] text-on-surface focus:outline-none focus:border-secondary transition-colors px-1 text-left sm:text-right"
+                            className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-lg font-black w-full min-w-[120px] sm:w-[180px] text-secondary shadow-sm focus:border-secondary transition-all px-3 py-2 text-right outline-none"
                           />
                         </div>
                         <div className="text-right w-24">
@@ -608,31 +625,31 @@ export const Calculator: React.FC = () => {
                   
                   {/* Journal Input Row */}
                   {recipe.journalId && (
-                    <div className="bg-surface-container-low hover:bg-surface-container-high transition-colors p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-outline-variant/10">
-                      <div className="flex items-center gap-4 border-l-2 border-amber-500 pl-3">
-                        <div className="w-10 h-10 bg-surface-container-lowest rounded-lg p-1 shrink-0 flex items-center justify-center">
+                    <div className="bg-surface-container-low hover:bg-surface-container-high transition-all p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-2 border-amber-500/20 shadow-lg shadow-amber-900/5">
+                      <div className="flex items-center gap-5 border-l-4 border-amber-500 pl-4">
+                        <div className="w-14 h-14 bg-surface-container-lowest rounded-xl p-2 shrink-0 flex items-center justify-center shadow-inner">
                           <img src={`https://render.albiononline.com/v1/item/${recipe.journalId}.png`} alt="Journal" className="max-w-full max-h-full" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-amber-500">Diário (Vazio)</p>
-                          <p className="text-[10px] text-on-surface-variant font-medium">Requeridos: {Math.ceil(calculations.journalsFilled)} Un</p>
+                          <p className="text-sm font-black text-amber-500 uppercase tracking-tighter italic">Diário (Vazio)</p>
+                          <p className="text-xs text-on-surface-variant font-bold mt-0.5">Requeridos: <span className="text-amber-400">{Math.ceil(calculations.journalsFilled)}</span> unidades</p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-8 bg-surface-container sm:bg-transparent p-3 sm:p-0 rounded-lg w-full sm:w-auto">
-                         <div className="text-left sm:text-right border-r border-outline-variant/30 pr-4">
-                          <p className="text-[10px] text-on-surface-variant uppercase font-bold mb-1">Preço Compra</p>
+                      <div className="flex items-center justify-between sm:justify-end gap-4 bg-surface-container-highest/20 sm:bg-transparent p-4 sm:p-0 rounded-xl w-full sm:w-auto">
+                         <div className="text-right">
+                          <p className="text-[10px] text-on-surface-variant uppercase font-black mb-1.5 tracking-tighter">Preço Compra</p>
                           <CurrencyInput
                             value={state.prices[recipe.journalId]?.buy || 0}
                             onChange={(newValue) => updatePrice(recipe.journalId, 'buy', newValue)}
-                            className="bg-transparent border-b border-outline-variant/30 text-sm font-semibold w-[100px] sm:w-[130px] text-amber-500 focus:outline-none focus:border-amber-400 transition-colors px-1 text-left sm:text-right"
+                            className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-lg font-black w-full min-w-[120px] sm:w-[150px] text-amber-500 shadow-sm focus:border-amber-400 transition-all px-3 py-2 text-right outline-none"
                           />
                         </div>
-                        <div className="text-left sm:text-right w-[100px] sm:w-[130px]">
-                          <p className="text-[10px] text-on-surface-variant uppercase font-bold mb-1">Valor Cheio</p>
+                        <div className="text-right">
+                          <p className="text-[10px] text-on-surface-variant uppercase font-black mb-1.5 tracking-tighter">Valor Cheio</p>
                           <CurrencyInput
                              value={state.prices[recipe.journalId.replace('_EMPTY', '_FULL')]?.sell || 0}
                              onChange={(newValue) => updatePrice(recipe.journalId.replace('_EMPTY', '_FULL'), 'sell', newValue)}
-                             className="bg-transparent border-b border-outline-variant/30 text-sm font-semibold w-full text-primary focus:outline-none focus:border-primary transition-colors px-1 text-left sm:text-right"
+                             className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-lg font-black w-full min-w-[120px] sm:w-[150px] text-primary shadow-sm focus:border-primary transition-all px-3 py-2 text-right outline-none"
                            />
                         </div>
                       </div>
@@ -756,12 +773,18 @@ export const Calculator: React.FC = () => {
                 </div>
 
                 <div className="space-y-3 pt-4 border-t border-outline-variant/20 relative z-10">
-                  <div className="flex flex-col gap-2">
-                     <label className="text-[10px] font-bold text-on-surface-variant uppercase ml-1">Preço de Venda do Item:</label>
+                  <div className="flex flex-col gap-2 bg-surface-container-highest/30 p-4 rounded-2xl border-2 border-primary/20 shadow-lg shadow-primary/5 relative overflow-hidden">
+                     <div className="absolute top-0 right-0 p-2 opacity-10">
+                        <span className="material-symbols-outlined text-4xl text-primary">sell</span>
+                     </div>
+                     <label className="text-[10px] font-black text-primary uppercase ml-1 tracking-tighter flex items-center gap-1.5 grayscale opacity-70">
+                        <span className="material-symbols-outlined text-sm">sell</span>
+                        Preço de Venda Final:
+                     </label>
                      <CurrencyInput
                         value={state.prices[selectedRecipeId]?.sell || 0}
                         onChange={(newValue) => updatePrice(selectedRecipeId, 'sell', newValue)}
-                        className="w-full bg-surface-container-highest border border-outline-variant/20 rounded-lg py-2.5 px-4 text-sm font-bold text-on-surface outline-none focus:border-secondary transition-colors text-right"
+                        className="bg-surface-container-lowest border border-primary/30 rounded-xl text-2xl font-black w-full text-primary shadow-inner focus:border-primary transition-all px-4 py-3 text-right outline-none ring-offset-2 focus:ring-2 focus:ring-primary/20"
                       />
                   </div>
                 </div>
