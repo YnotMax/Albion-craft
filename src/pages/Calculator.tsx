@@ -10,7 +10,7 @@ import { calculateFocusCost } from '../utils/focus';
 import { calculateJournalsFilled } from '../utils/journal';
 
 export const Calculator: React.FC = () => {
-  const { state, updatePrice, addFavorite, syncPrices, isSyncing, syncMessage, addGroup, setCalculatorState } = useAppContext();
+  const { state, updatePrice, addFavorite, syncPrices, isSyncing, syncMessage, addGroup, setCalculatorState, setBuyCity, setSellCity } = useAppContext();
   
   const categories = useMemo(() => {
     const cats = Array.from(new Set(RECIPES.map(r => ITEMS.find(i => i.id === r.itemId)?.category).filter(Boolean))) as string[];
@@ -542,6 +542,19 @@ const InverseCalculationBlock: React.FC<{
             </div>
 
             <div className="space-y-4">
+              <MarketSelector 
+                label="Compra de Materiais"
+                value={state.buyCity}
+                onChange={setBuyCity}
+              />
+              <MarketSelector 
+                label="Venda do Item"
+                value={state.sellCity}
+                onChange={setSellCity}
+              />
+
+              <div className="pt-2 border-t border-outline-variant/10"></div>
+
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-on-surface-variant uppercase ml-1">Categoria</label>
                 <select
@@ -634,7 +647,7 @@ const InverseCalculationBlock: React.FC<{
                 <input 
                   type="range" 
                   min="0" 
-                  max="50" 
+                  max="70" 
                   step="0.1"
                   value={rrr}
                   onChange={(e) => setRrr(Number(e.target.value))}
@@ -644,6 +657,7 @@ const InverseCalculationBlock: React.FC<{
                   <button onClick={() => setRrr(0)} className="hover:text-primary transition-colors">0%</button>
                   <button onClick={() => setRrr(15.2)} className="hover:text-primary transition-colors">15.2% (Cidade)</button>
                   <button onClick={() => setRrr(47.9)} className="hover:text-primary transition-colors">47.9% (Foco)</button>
+                  <button onClick={() => setRrr(70)} className="hover:text-primary transition-colors">70% (Bônus Máximo)</button>
                 </div>
               </div>
             </div>
@@ -689,7 +703,11 @@ const InverseCalculationBlock: React.FC<{
                 <span className={`text-xl md:text-2xl font-bold tight-tracking ${calculations.netProfit >= 0 ? 'text-primary' : 'text-error'}`}>
                   {calculations.netProfit >= 0 ? '+ ' : '- '}{Math.abs(Math.round(calculations.netProfit)).toLocaleString()}
                 </span>
-                <p className="text-[10px] text-on-surface-variant mt-1">Estimativa de mercado atual</p>
+                <p className="text-[10px] text-on-surface-variant mt-1">
+                  {recipe && state.prices[recipe.itemId]?.updatedAt 
+                    ? `Atualizado: ${formatTimeAgo(state.prices[recipe.itemId].updatedAt!)}` 
+                    : 'Estimativa de mercado atual'}
+                </p>
               </div>
             </div>
             <div className="bg-surface-container rounded-2xl p-4 md:p-6 flex flex-col justify-between h-32 md:h-36 relative overflow-hidden border-b-2 border-secondary/40">

@@ -6,6 +6,7 @@ import { MarketSelector } from '../components/MarketSelector';
 import { TrendingUp, TrendingDown, RefreshCw, Book, Info, AlertCircle, ShoppingCart, BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
 import { calculateFocusCost } from '../utils/focus';
 import { calculateJournalsFilled } from '../utils/journal';
+import { formatTimeAgo } from '../utils/format';
 
 export const MarketAnalysis: React.FC = () => {
   const { state, updatePrice, syncPrices, isSyncing, syncMessage, setBuyCity, setSellCity } = useAppContext();
@@ -222,16 +223,17 @@ export const MarketAnalysis: React.FC = () => {
                 <input 
                   type="range" 
                   min="0" 
-                  max="50" 
+                  max="70" 
                   step="0.1"
                   value={rrr}
                   onChange={(e) => setRrr(Number(e.target.value))}
                   className="w-full accent-primary h-1.5 bg-surface-container-high rounded-lg appearance-none cursor-pointer"
                 />
                 <div className="flex justify-between text-[9px] text-on-surface-variant font-medium pt-1 px-1">
-                  <span>0%</span>
-                  <span>15.2% (Cidade)</span>
-                  <span>47% (Foco)</span>
+                  <button onClick={() => setRrr(0)} className="hover:text-primary transition-colors">0%</button>
+                  <button onClick={() => setRrr(15.2)} className="hover:text-primary transition-colors">15.2%</button>
+                  <button onClick={() => setRrr(47.9)} className="hover:text-primary transition-colors">47.9%</button>
+                  <button onClick={() => setRrr(70)} className="hover:text-primary transition-colors">70%</button>
                 </div>
               </div>
             </div>
@@ -357,6 +359,9 @@ export const MarketAnalysis: React.FC = () => {
                                 onChange={(val) => updatePrice(res.item.id, state.prices[res.item.id]?.buy || 0, val)}
                                 className="text-[11px] h-7"
                               />
+                              <div className="text-[8px] text-on-surface-variant opacity-60">
+                                {res.prices.updatedAt ? `Atual: ${formatTimeAgo(res.prices.updatedAt)}` : 'S/ Dados'}
+                              </div>
                             </div>
                           </td>
                           <td className="p-4 text-right">
