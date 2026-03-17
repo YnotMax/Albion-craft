@@ -137,7 +137,7 @@ export const Dashboard: React.FC = () => {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-zinc-100">Visão do Diretor</h2>
+          <h2 className="text-2xl font-bold text-zinc-100">Favoritos</h2>
           <p className="text-zinc-400 mt-1">Acompanhe a rentabilidade dos seus crafts favoritos em tempo real.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">

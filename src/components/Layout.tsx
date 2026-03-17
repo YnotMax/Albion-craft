@@ -13,7 +13,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
 
   const tabs = [
     { id: 'calculator', label: 'Calculadora', icon: 'calculate' },
-    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+    { id: 'dashboard', label: 'Favoritos', icon: 'star' },
     { id: 'market', label: 'Análise de Mercado', icon: 'analytics' },
     { id: 'specs', label: 'Especializações', icon: 'military_tech' },
     { id: 'prices', label: 'Preços', icon: 'payments' },
