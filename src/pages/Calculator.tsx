@@ -351,6 +351,9 @@ const DetailsBlock: React.FC<{
             onChange={(newValue) => updatePrice(selectedRecipeId, 'sell', newValue)}
             className="bg-surface-container-lowest border border-primary/30 rounded-xl text-2xl font-black w-full text-primary shadow-inner focus:border-primary transition-all px-4 py-3 text-right outline-none ring-offset-2 focus:ring-2 focus:ring-primary/20"
           />
+          <div className="text-[10px] text-right text-on-surface-variant font-medium mt-1 pr-1">
+             {state.prices[selectedRecipeId]?.updatedAt ? `Atualizado: ${formatTimeAgo(state.prices[selectedRecipeId].updatedAt)}` : 'S/ Dados'}
+          </div>
       </div>
     </div>
     
@@ -769,6 +772,9 @@ const InverseCalculationBlock: React.FC<{
                             onChange={(newValue) => updatePrice(mat.itemId, 'buy', newValue)}
                             className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-lg font-black w-full min-w-[120px] sm:w-[180px] text-secondary shadow-sm focus:border-secondary transition-all px-3 py-2 text-right outline-none"
                           />
+                          <div className="text-[9px] text-right text-on-surface-variant opacity-70 mt-1 font-medium pr-1">
+                            {state.prices[mat.itemId]?.updatedAt ? `Atual: ${formatTimeAgo(state.prices[mat.itemId].updatedAt)}` : 'S/ Dados'}
+                          </div>
                         </div>
                         <div className="text-right w-24">
                           <p className="text-[10px] text-on-surface-variant uppercase font-bold mb-1">Custo Total</p>
@@ -798,6 +804,9 @@ const InverseCalculationBlock: React.FC<{
                             onChange={(newValue) => updatePrice(recipe.journalId, 'buy', newValue)}
                             className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-lg font-black w-full min-w-[120px] sm:w-[150px] text-amber-500 shadow-sm focus:border-amber-400 transition-all px-3 py-2 text-right outline-none"
                           />
+                          <div className="text-[9px] text-right text-on-surface-variant opacity-70 mt-1 font-medium pr-1">
+                            {state.prices[recipe.journalId]?.updatedAt ? `Atual: ${formatTimeAgo(state.prices[recipe.journalId].updatedAt)}` : 'S/ Dados'}
+                          </div>
                         </div>
                         <div className="text-right">
                           <p className="text-[10px] text-on-surface-variant uppercase font-black mb-1.5 tracking-tighter">Valor Cheio</p>
@@ -806,6 +815,9 @@ const InverseCalculationBlock: React.FC<{
                              onChange={(newValue) => updatePrice(recipe.journalId.replace('_EMPTY', '_FULL'), 'sell', newValue)}
                              className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-lg font-black w-full min-w-[120px] sm:w-[150px] text-primary shadow-sm focus:border-primary transition-all px-3 py-2 text-right outline-none"
                            />
+                           <div className="text-[9px] text-right text-on-surface-variant opacity-70 mt-1 font-medium pr-1">
+                            {state.prices[recipe.journalId.replace('_EMPTY', '_FULL')]?.updatedAt ? `Atual: ${formatTimeAgo(state.prices[recipe.journalId.replace('_EMPTY', '_FULL')].updatedAt!)}` : 'S/ Dados'}
+                          </div>
                         </div>
                       </div>
                     </div>
