@@ -95,6 +95,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (parsed.calculatorState && !parsed.calculatorState.quantity) {
           parsed.calculatorState.quantity = 1;
         }
+
+        // Sanitizing persisted prices to fix potential NaN issues
+        if (parsed.prices) {
+          Object.keys(parsed.prices).forEach((key) => {
+            const priceData = parsed.prices[key];
+            if (typeof priceData.buy !== 'number' || isNaN(priceData.buy)) {
+              priceData.buy = 0;
+            }
+            if (typeof priceData.sell !== 'number' || isNaN(priceData.sell)) {
+              priceData.sell = 0;
+            }
+          });
+        }
+        
         return parsed;
       } catch (e) {
         console.error('Failed to parse saved state', e);
