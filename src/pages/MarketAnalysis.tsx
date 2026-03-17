@@ -11,6 +11,15 @@ import { formatTimeAgo } from '../utils/format';
 export const MarketAnalysis: React.FC = () => {
   const { state, updatePrice, syncPrices, isSyncing, syncMessage, setBuyCity, setSellCity } = useAppContext();
 
+  const handlePriceChange = (id: string, type: 'buy' | 'sell', val: number) => {
+    const currentPrice = state.prices[id] || { buy: 0, sell: 0 };
+    if (type === 'buy') {
+      updatePrice(id, val, currentPrice.sell);
+    } else {
+      updatePrice(id, currentPrice.buy, val);
+    }
+  };
+
   // Filter Logic
   const categories = useMemo(() => {
     const cats = Array.from(new Set(RECIPES.map(r => ITEMS.find(i => i.id === r.itemId)?.category).filter(Boolean))) as string[];
@@ -343,7 +352,7 @@ export const MarketAnalysis: React.FC = () => {
                                 <label className="text-[9px] text-on-surface-variant uppercase font-bold truncate block">{artifactItem?.name.split(' ').slice(2).join(' ') || 'Artefato'}</label>
                                 <CurrencyInput 
                                   value={artifactPrice}
-                                  onChange={(val) => updatePrice(artifactMat.itemId, val, state.prices[artifactMat.itemId]?.sell || 0)}
+                                  onChange={(val) => handlePriceChange(artifactMat.itemId, 'buy', val)}
                                   className="text-[11px] h-7"
                                 />
                               </div>
@@ -356,7 +365,7 @@ export const MarketAnalysis: React.FC = () => {
                               <label className="text-[9px] text-on-surface-variant uppercase font-bold block">Preço Final</label>
                               <CurrencyInput 
                                 value={res.prices.sell}
-                                onChange={(val) => updatePrice(res.item.id, state.prices[res.item.id]?.buy || 0, val)}
+                                onChange={(val) => handlePriceChange(res.item.id, 'sell', val)}
                                 className="text-[11px] h-7"
                               />
                               <div className="text-[8px] text-on-surface-variant opacity-60">

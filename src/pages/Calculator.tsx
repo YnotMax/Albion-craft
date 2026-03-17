@@ -12,6 +12,15 @@ import { calculateJournalsFilled } from '../utils/journal';
 export const Calculator: React.FC = () => {
   const { state, updatePrice, addFavorite, syncPrices, isSyncing, syncMessage, addGroup, setCalculatorState, setBuyCity, setSellCity } = useAppContext();
   
+  const handlePriceChange = (id: string, type: 'buy' | 'sell', val: number) => {
+    const currentPrice = state.prices[id] || { buy: 0, sell: 0 };
+    if (type === 'buy') {
+      updatePrice(id, val, currentPrice.sell);
+    } else {
+      updatePrice(id, currentPrice.buy, val);
+    }
+  };
+
   const categories = useMemo(() => {
     const cats = Array.from(new Set(RECIPES.map(r => ITEMS.find(i => i.id === r.itemId)?.category).filter(Boolean))) as string[];
     return cats.sort((a, b) => a.localeCompare(b));
@@ -769,7 +778,7 @@ const InverseCalculationBlock: React.FC<{
                           <p className="text-[10px] text-on-surface-variant uppercase font-black mb-1.5 tracking-tighter">Custo Unitário</p>
                           <CurrencyInput
                             value={mat.price}
-                            onChange={(newValue) => updatePrice(mat.itemId, 'buy', newValue)}
+                            onChange={(newValue) => handlePriceChange(mat.itemId, 'buy', newValue)}
                             className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-lg font-black w-full min-w-[120px] sm:w-[180px] text-secondary shadow-sm focus:border-secondary transition-all px-3 py-2 text-right outline-none"
                           />
                           <div className="text-[9px] text-right text-on-surface-variant opacity-70 mt-1 font-medium pr-1">
@@ -801,7 +810,7 @@ const InverseCalculationBlock: React.FC<{
                           <p className="text-[10px] text-on-surface-variant uppercase font-black mb-1.5 tracking-tighter">Preço Compra</p>
                           <CurrencyInput
                             value={state.prices[recipe.journalId]?.buy || 0}
-                            onChange={(newValue) => updatePrice(recipe.journalId, 'buy', newValue)}
+                            onChange={(newValue) => handlePriceChange(recipe.journalId, 'buy', newValue)}
                             className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-lg font-black w-full min-w-[120px] sm:w-[150px] text-amber-500 shadow-sm focus:border-amber-400 transition-all px-3 py-2 text-right outline-none"
                           />
                           <div className="text-[9px] text-right text-on-surface-variant opacity-70 mt-1 font-medium pr-1">
@@ -812,7 +821,7 @@ const InverseCalculationBlock: React.FC<{
                           <p className="text-[10px] text-on-surface-variant uppercase font-black mb-1.5 tracking-tighter">Valor Cheio</p>
                           <CurrencyInput
                              value={state.prices[recipe.journalId.replace('_EMPTY', '_FULL')]?.sell || 0}
-                             onChange={(newValue) => updatePrice(recipe.journalId.replace('_EMPTY', '_FULL'), 'sell', newValue)}
+                             onChange={(newValue) => handlePriceChange(recipe.journalId.replace('_EMPTY', '_FULL'), 'sell', newValue)}
                              className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-lg font-black w-full min-w-[120px] sm:w-[150px] text-primary shadow-sm focus:border-primary transition-all px-3 py-2 text-right outline-none"
                            />
                            <div className="text-[9px] text-right text-on-surface-variant opacity-70 mt-1 font-medium pr-1">
@@ -827,7 +836,7 @@ const InverseCalculationBlock: React.FC<{
 
               {/* Detalhamento Block - Only visible here for Mobile, hidden on XL here */}
               <div className="xl:hidden">
-                <DetailsBlock quantity={quantity} calculations={calculations} marketTax={marketTax} selectedRecipeId={selectedRecipeId} state={state} updatePrice={updatePrice} useFocus={useFocus} />
+                <DetailsBlock quantity={quantity} calculations={calculations} marketTax={marketTax} selectedRecipeId={selectedRecipeId} state={state} updatePrice={handlePriceChange} useFocus={useFocus} />
               </div>
 
               {/* Inverse Calculation - Full width on bottom of Left Column for Desktop/XL context */}
@@ -838,7 +847,7 @@ const InverseCalculationBlock: React.FC<{
 
             {/* Right Column (Details on Desktop) */}
             <div className="hidden xl:flex xl:col-span-4 flex-col gap-6">
-               <DetailsBlock quantity={quantity} calculations={calculations} marketTax={marketTax} selectedRecipeId={selectedRecipeId} state={state} updatePrice={updatePrice} useFocus={useFocus} />
+               <DetailsBlock quantity={quantity} calculations={calculations} marketTax={marketTax} selectedRecipeId={selectedRecipeId} state={state} updatePrice={handlePriceChange} useFocus={useFocus} />
             </div>
 
             {/* Inverse Calculation - Visible here for mobile as last item */}
