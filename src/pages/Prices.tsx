@@ -235,6 +235,7 @@ export const Prices: React.FC = () => {
                                  <CurrencyInput
                                     value={priceVal}
                                     onChange={(v) => handlePriceChange(item.id, v)}
+                                    variant="minimal"
                                     className={`text-xs font-black text-right bg-transparent w-full min-w-[50px] outline-none text-on-surface group-hover:${enchColor}`}
                                  />
                                </div>

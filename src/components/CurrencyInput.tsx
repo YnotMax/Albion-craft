@@ -6,9 +6,10 @@ interface CurrencyInputProps {
   label?: string;
   className?: string;
   placeholder?: string;
+  variant?: 'default' | 'minimal';
 }
 
-export const CurrencyInput: React.FC<CurrencyInputProps> = ({ value, onChange, label, className = '', placeholder = '0' }) => {
+export const CurrencyInput: React.FC<CurrencyInputProps> = ({ value, onChange, label, className = '', placeholder = '0', variant = 'default' }) => {
   const [displayValue, setDisplayValue] = useState('');
 
   useEffect(() => {
@@ -47,6 +48,19 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({ value, onChange, l
       onChange(numValue);
     }
   };
+
+  if (variant === 'minimal') {
+    return (
+      <input
+        type="text"
+        inputMode="numeric"
+        value={displayValue}
+        onChange={handleChange}
+        placeholder={placeholder}
+        className={`bg-transparent outline-none w-full ${className}`}
+      />
+    );
+  }
 
   return (
     <div className={`flex flex-col ${className}`}>
