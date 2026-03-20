@@ -309,7 +309,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
 
             if (changed && (newBuy !== current.buy || newSell !== current.sell || current.buy === 0)) {
-              newPrices[itemId] = {
+              // If a specific quality was requested, save under a quality-keyed slot
+              // so each quality level has independent price storage
+              const priceKey = targetQuality ? `${itemId}_q${targetQuality}` : itemId;
+              newPrices[priceKey] = {
                 buy: newBuy,
                 sell: newSell,
                 updatedAt: latestDate

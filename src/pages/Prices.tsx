@@ -59,12 +59,17 @@ export const Prices: React.FC = () => {
     return Object.values(groups).sort((a, b) => a.baseName.localeCompare(b.baseName));
   }, [categoryFilter]);
 
+  // Helper: compute the key used to store/read prices for a given quality
+  const getPriceKey = (itemId: string) =>
+    syncQuality > 0 ? `${itemId}_q${syncQuality}` : itemId;
+
   const handlePriceChange = (id: string, val: number) => {
-    const currentPrice = state.prices[id] || { buy: 0, sell: 0 };
+    const priceKey = getPriceKey(id);
+    const currentPrice = state.prices[priceKey] || { buy: 0, sell: 0 };
     if (priceType === 'buy') {
-      updatePrice(id, val, currentPrice.sell);
+      updatePrice(priceKey, val, currentPrice.sell);
     } else {
-      updatePrice(id, currentPrice.buy, val);
+      updatePrice(priceKey, currentPrice.buy, val);
     }
   };
 
@@ -215,7 +220,7 @@ export const Prices: React.FC = () => {
                              const item = tierItems[ench];
                              if (!item) return null;
                              
-                             const priceData = state.prices[item.id] || { buy: 0, sell: 0 };
+                             const priceData = state.prices[getPriceKey(item.id)] || { buy: 0, sell: 0 };
                              const priceVal = priceType === 'sell' ? priceData.sell : priceData.buy;
 
                              // Color variants based on enchantment
