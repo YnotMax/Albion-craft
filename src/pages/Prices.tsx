@@ -3,9 +3,10 @@ import { useAppContext } from '../context/AppContext';
 import { ITEMS } from '../constants';
 import { RefreshCw, Search, Info } from 'lucide-react';
 import { CurrencyInput } from '../components/CurrencyInput';
+import { MarketSelector } from '../components/MarketSelector';
 
 export const Prices: React.FC = () => {
-  const { state, updatePrice, syncPrices, isSyncing, syncMessage } = useAppContext();
+  const { state, updatePrice, syncPrices, isSyncing, syncMessage, setBuyCity, setSellCity } = useAppContext();
   
   const [priceType, setPriceType] = useState<'sell'|'buy'>('sell');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
@@ -145,6 +146,19 @@ export const Prices: React.FC = () => {
             </select>
           </div>
         </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center gap-4 bg-surface-container-low p-4 rounded-xl border border-outline-variant/10 shadow-sm">
+        <MarketSelector 
+          label="Cidade de Compra" 
+          value={state.buyCity} 
+          onChange={setBuyCity} 
+        />
+        <MarketSelector 
+          label="Cidade de Venda" 
+          value={state.sellCity} 
+          onChange={setSellCity} 
+        />
       </div>
 
       {/* Data Grid */}
