@@ -1,45 +1,87 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { ITEMS } from '../constants';
+import { RefreshCw, Search, Info } from 'lucide-react';
 import { CurrencyInput } from '../components/CurrencyInput';
-import { MarketSelector } from '../components/MarketSelector';
-import { formatTimeAgo } from '../utils/format';
-import { Search, Filter, RefreshCw, Clock, Info } from 'lucide-react';
 
 export const Prices: React.FC = () => {
-  const { state, updatePrice, syncPrices, isSyncing, syncMessage, setBuyCity, setSellCity } = useAppContext();
-  const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('All');
-  const [tierFilter, setTierFilter] = useState('All');
-  const [enchantmentFilter, setEnchantmentFilter] = useState('All');
-  const [displayLimit, setDisplayLimit] = useState(24);
+  const { state, updatePrice, syncPrices, isSyncing, syncMessage } = useAppContext();
+  
+  const [priceType, setPriceType] = useState<'sell'|'buy'>('sell');
+  const [categoryFilter, setCategoryFilter] = useState<string>('');
 
-  // Reset limit when filters change
-  React.useEffect(() => {
-    setDisplayLimit(24);
-  }, [search, categoryFilter, tierFilter, enchantmentFilter]);
+  const tiers = ['T4', 'T5', 'T6', 'T7', 'T8'];
+  const enchantments = ['0', '1', '2', '3', '4'];
 
   const categories = useMemo(() => {
-    const cats = Array.from(new Set(ITEMS.map(i => i.category)));
-    return ['All', ...cats.sort((a, b) => a.localeCompare(b))];
+    const cats = Array.from(new Set(ITEMS.map(i => i.category).filter(Boolean)));
+    return cats.sort((a, b) => a.localeCompare(b));
   }, []);
-  const tiers = ['All', 'T4', 'T5', 'T6', 'T7', 'T8'];
-  const enchantments = ['All', '0', '1', '2', '3', '4'];
 
-  const filteredItems = ITEMS.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = categoryFilter === 'All' || item.category === categoryFilter;
-    const matchesTier = tierFilter === 'All' || item.tier === tierFilter;
-    const matchesEnchantment = enchantmentFilter === 'All' || item.enchantment === enchantmentFilter;
-    return matchesSearch && matchesCategory && matchesTier && matchesEnchantment;
-  });
+  // Initialize selected category if empty
+  React.useEffect(() => {
+    if (!categoryFilter && categories.length > 0) {
+      setCategoryFilter(categories[0]);
+    }
+  }, [categories, categoryFilter]);
 
-  const visibleItems = filteredItems.slice(0, displayLimit);
+  const groupedItems = useMemo(() => {
+    if (!categoryFilter) return [];
+    
+    const itemsInCategory = ITEMS.filter(i => i.category === categoryFilter);
+    const groups: Record<string, {
+        baseName: string;
+        imageItemId: string;
+        items: Record<string, Record<string, any>>
+    }> = {};
+
+    itemsInCategory.forEach(item => {
+        const parts = item.name.split(' T');
+        const baseName = parts.length > 1 ? parts.slice(0, -1).join(' T') : item.name;
+        
+        if (!groups[baseName]) {
+            groups[baseName] = { baseName, imageItemId: item.id, items: {} };
+        }
+        
+        // Tenta usar a foto do T4 Normal como capa do grupo
+        if (item.tier === 'T4' && item.enchantment === '0') {
+            groups[baseName].imageItemId = item.id;
+        }
+
+        if (!groups[baseName].items[item.tier]) {
+            groups[baseName].items[item.tier] = {};
+        }
+        groups[baseName].items[item.tier][item.enchantment] = item;
+    });
+
+    return Object.values(groups).sort((a, b) => a.baseName.localeCompare(b.baseName));
+  }, [categoryFilter]);
+
+  const handlePriceChange = (id: string, val: number) => {
+    const currentPrice = state.prices[id] || { buy: 0, sell: 0 };
+    if (priceType === 'buy') {
+      updatePrice(id, val, currentPrice.sell);
+    } else {
+      updatePrice(id, currentPrice.buy, val);
+    }
+  };
+
+  const handleSyncGroup = (group: any) => {
+      const idsToSync: string[] = [];
+      Object.values(group.items).forEach((tierMap: any) => {
+          Object.values(tierMap).forEach((item: any) => {
+              idsToSync.push(item.id);
+          });
+      });
+      if (idsToSync.length > 0) {
+          syncPrices(idsToSync);
+      }
+  };
 
   return (
-    <div className="space-y-6 relative">
-      {/* Sync Toast Notification */}
-      {syncMessage && (
+    <div className="space-y-4 relative font-['Inter']">
+       {/* Sync Toast Notification */}
+       {syncMessage && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-zinc-900 border border-amber-500/50 text-amber-100 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
           {isSyncing ? (
             <RefreshCw className="w-5 h-5 text-amber-400 animate-spin" />
@@ -50,170 +92,143 @@ export const Prices: React.FC = () => {
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header Panel */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between bg-surface-container-low p-4 rounded-xl border border-outline-variant/10 shadow-lg gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-zinc-100">Central de Preços</h2>
-          <p className="text-zinc-400 mt-1">Gerencie os preços de compra e venda dos itens.</p>
+          <h1 className="text-xl font-black text-on-surface flex items-center gap-2">
+            <span className="material-symbols-outlined text-secondary">monitor_weight</span>
+            Painel de Cotações: {categoryFilter}
+          </h1>
+          <p className="text-on-surface-variant text-xs mt-1">Grade de Dados Avançada (Analytics)</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <MarketSelector 
-            label="Cidade de Compra" 
-            value={state.buyCity} 
-            onChange={setBuyCity} 
-          />
-          <MarketSelector 
-            label="Cidade de Venda" 
-            value={state.sellCity} 
-            onChange={setSellCity} 
-          />
-        </div>
-      </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 bg-zinc-900 p-4 rounded-xl border border-zinc-800">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-          <input
-            type="text"
-            placeholder="Buscar item..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 pl-10 pr-4 text-zinc-100 focus:outline-none focus:border-amber-500"
-          />
-        </div>
-        <div className="flex flex-wrap gap-4 lg:w-auto">
-          <div className="relative w-full md:w-auto md:min-w-[180px]">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-            <select
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col">
+            <label className="text-[9px] uppercase font-bold text-on-surface-variant ml-1 mb-0.5">Editar</label>
+            <select 
+              value={priceType}
+              onChange={(e) => setPriceType(e.target.value as 'buy'|'sell')}
+              className="bg-surface-container-high border border-outline-variant/30 rounded-lg px-3 py-2 text-xs font-bold text-on-surface focus:border-primary outline-none"
+            >
+              <option value="sell">Preço de Venda</option>
+              <option value="buy">Preço de Compra</option>
+            </select>
+          </div>
+          
+          <div className="flex flex-col">
+            <label className="text-[9px] uppercase font-bold text-on-surface-variant ml-1 mb-0.5">Categoria</label>
+            <select 
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 pl-10 pr-4 text-zinc-100 focus:outline-none focus:border-amber-500 appearance-none"
+              className="bg-surface-container-high border border-outline-variant/30 rounded-lg px-3 py-2 text-xs font-bold text-on-surface focus:border-primary outline-none"
             >
-              {categories.map(c => <option key={c} value={c}>{c === 'All' ? 'Todas Categorias' : c}</option>)}
-            </select>
-          </div>
-          <div className="relative w-full md:w-auto md:min-w-[120px]">
-            <select
-              value={tierFilter}
-              onChange={(e) => setTierFilter(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 px-4 text-zinc-100 focus:outline-none focus:border-amber-500 appearance-none"
-            >
-              {tiers.map(t => <option key={t} value={t}>{t === 'All' ? 'Todos Tiers' : t}</option>)}
-            </select>
-          </div>
-          <div className="relative w-full md:w-auto md:min-w-[140px]">
-            <select
-              value={enchantmentFilter}
-              onChange={(e) => setEnchantmentFilter(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-700 rounded-lg py-2 px-4 text-zinc-100 focus:outline-none focus:border-amber-500 appearance-none"
-            >
-              {enchantments.map(e => <option key={e} value={e}>{e === 'All' ? 'Todos Encantamentos' : `Encantamento .${e}`}</option>)}
+              {categories.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </select>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {visibleItems.map(item => {
-          const price = state.prices[item.id] || { buy: 0, sell: 0 };
-          
-          let borderColor = 'border-zinc-800';
-          let bgColor = 'bg-zinc-900';
-          let accentColor = 'bg-zinc-700';
-          
-          if (item.category === 'Recursos Refinados') {
-            borderColor = 'border-amber-900/30';
-            bgColor = 'bg-amber-950/10';
-            accentColor = 'bg-amber-500';
-          } else if (item.category.includes('Tecido')) {
-            borderColor = 'border-emerald-900/30';
-            bgColor = 'bg-emerald-950/10';
-            accentColor = 'bg-emerald-500';
-          } else if (item.category.includes('Couro')) {
-            borderColor = 'border-orange-900/30';
-            bgColor = 'bg-orange-950/10';
-            accentColor = 'bg-orange-500';
-          } else if (item.category.includes('Placa')) {
-            borderColor = 'border-blue-900/30';
-            bgColor = 'bg-blue-950/10';
-            accentColor = 'bg-blue-500';
-          } else if (['Lanças', 'Espadas', 'Arcos', 'Adagas'].includes(item.category)) {
-            borderColor = 'border-red-900/30';
-            bgColor = 'bg-red-950/10';
-            accentColor = 'bg-red-500';
-          } else if (item.category === 'Diários') {
-            borderColor = 'border-purple-900/30';
-            bgColor = 'bg-purple-950/10';
-            accentColor = 'bg-purple-500';
-          } else if (item.category === 'Artefatos') {
-            borderColor = 'border-zinc-700/30';
-            bgColor = 'bg-zinc-800/10';
-            accentColor = 'bg-zinc-400';
-          }
-
-          return (
-            <div key={item.id} className={`${bgColor} border ${borderColor} rounded-xl p-4 shadow-sm hover:border-zinc-700 transition-all relative group overflow-hidden`}>
-              <div className={`absolute top-0 left-0 w-1 h-full ${accentColor} opacity-50 group-hover:opacity-100 transition-opacity`} />
-              
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="font-semibold text-zinc-100 pr-8 leading-tight">{item.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${
-                      item.category === 'Recursos Refinados' ? 'bg-amber-500/20 text-amber-500' :
-                      item.category.includes('Tecido') ? 'bg-emerald-500/20 text-emerald-500' :
-                      item.category.includes('Couro') ? 'bg-orange-500/20 text-orange-500' :
-                      item.category.includes('Placa') ? 'bg-blue-500/20 text-blue-500' :
-                      ['Lanças', 'Espadas', 'Arcos', 'Adagas'].includes(item.category) ? 'bg-red-500/20 text-red-500' :
-                      item.category === 'Diários' ? 'bg-purple-500/20 text-purple-500' :
-                      'bg-zinc-800 text-zinc-400'
-                    }`}>
-                      {item.category}
-                    </span>
-                    <span className="text-[10px] text-zinc-500 font-bold">{item.tier}</span>
+      {/* Data Grid */}
+      <div className="bg-surface-container-low rounded-xl border border-outline-variant/10 shadow-xl overflow-x-auto">
+        <table className="w-full text-left whitespace-nowrap min-w-[1000px]">
+          <thead>
+            <tr className="bg-surface-container-high text-[10px] uppercase text-on-surface-variant font-bold border-b border-outline-variant/20">
+              <th className="px-4 py-3 sticky left-0 bg-surface-container-high z-10 shadow-[2px_0_5px_rgba(0,0,0,0.1)]">Item Base</th>
+              {tiers.map(t => (
+                 <th key={t} className="px-4 py-3 border-l border-outline-variant/10 text-center w-[200px]">{t}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-outline-variant/10">
+            {groupedItems.map((group, idx) => (
+              <tr key={idx} className="hover:bg-surface-container-highest/10 transition-colors">
+                {/* Fixed Left Column */}
+                <td className="px-4 py-3 sticky left-0 bg-surface-container-low z-10 shadow-[2px_0_5px_rgba(0,0,0,0.2)]">
+                  <div className="flex items-center justify-between gap-3 w-48">
+                    <div className="flex items-center gap-3">
+                      <img src={`https://render.albiononline.com/v1/item/${group.imageItemId}.png`} alt={group.baseName} className="w-8 h-8 rounded bg-black/40" />
+                      <div>
+                        <div className="text-xs font-black text-on-surface truncate pr-2 max-w-[110px]" title={group.baseName}>{group.baseName}</div>
+                        <div className="text-[9px] text-on-surface-variant uppercase font-bold tracking-wider">{categoryFilter}</div>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleSyncGroup(group)}
+                      disabled={isSyncing}
+                      className="p-1.5 bg-surface-container-high hover:bg-surface-container-highest disabled:opacity-50 rounded-md text-on-surface-variant hover:text-primary transition-colors shrink-0 shadow-sm"
+                      title={`Sincronizar todos os Tiers de ${group.baseName}`}
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                    </button>
                   </div>
-                </div>
-                <button 
-                  onClick={() => syncPrices([item.id])}
-                  disabled={isSyncing}
-                  className="p-1.5 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 rounded-md text-zinc-400 hover:text-amber-400 transition-colors shrink-0"
-                  title="Sincronizar este item"
-                >
-                  <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                </button>
-              </div>
-              <div className="space-y-3 flex-1">
-                <CurrencyInput
-                  label="Ordem de Compra"
-                  value={price.buy}
-                  onChange={(val) => updatePrice(item.id, val, price.sell)}
-                  placeholder="0"
-                />
-                <CurrencyInput
-                  label="Ordem de Venda"
-                  value={price.sell}
-                  onChange={(val) => updatePrice(item.id, price.buy, val)}
-                  placeholder="0"
-                />
-              </div>
-              <div className="mt-4 pt-3 border-t border-zinc-800/50 flex items-center gap-1.5 text-xs text-zinc-500">
-                <Clock className="w-3.5 h-3.5" />
-                Atualizado: {formatTimeAgo(price.updatedAt)}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                </td>
+                
+                {/* Tier Cells */}
+                {tiers.map(tier => {
+                   const tierItems = group.items[tier];
+                   if (!tierItems) {
+                     return (
+                      <td key={tier} className="px-3 py-2 border-l border-outline-variant/10 align-middle text-center opacity-30">
+                        <span className="material-symbols-outlined text-on-surface-variant block mb-1">remove</span>
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">Sem dados</span>
+                      </td>
+                     );
+                   }
 
-      {filteredItems.length > displayLimit && (
-        <div className="flex justify-center pt-8 pb-12">
-          <button
-            onClick={() => setDisplayLimit(prev => prev + 24)}
-            className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-semibold py-3 px-8 rounded-xl border border-zinc-700 transition-all hover:scale-105 active:scale-95 shadow-lg"
-          >
-            Carregar mais itens ({filteredItems.length - displayLimit} restantes)
-          </button>
-        </div>
-      )}
+                   return (
+                     <td key={tier} className="px-3 py-2 border-l border-outline-variant/10 align-top">
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {enchantments.map(ench => {
+                             const item = tierItems[ench];
+                             if (!item) return null;
+                             
+                             const priceData = state.prices[item.id] || { buy: 0, sell: 0 };
+                             const priceVal = priceType === 'sell' ? priceData.sell : priceData.buy;
+
+                             // Color variants based on enchantment
+                             let enchColor = 'text-zinc-500';
+                             let hoverBorder = 'hover:border-zinc-700';
+                             let title = '.0 Normal';
+                             if (ench === '1') { enchColor = 'text-primary'; hoverBorder = 'hover:border-primary'; title = '.1 Incomum'; }
+                             if (ench === '2') { enchColor = 'text-blue-400'; hoverBorder = 'hover:border-blue-500'; title = '.2 Raro'; }
+                             if (ench === '3') { enchColor = 'text-purple-400'; hoverBorder = 'hover:border-purple-500'; title = '.3 Excepcional'; }
+                             if (ench === '4') { enchColor = 'text-amber-500'; hoverBorder = 'hover:border-amber-500'; title = '.4 Pristino'; }
+
+                             const isPristine = ench === '4';
+
+                             return (
+                               <div key={ench} title={title} className={`bg-surface-container-highest/30 p-1.5 rounded flex justify-between items-center group cursor-pointer border border-transparent transition-all overflow-hidden ${hoverBorder} ${isPristine ? 'col-span-2 mt-0.5' : ''}`}>
+                                 <span className={`text-[9px] font-bold ${enchColor} shrink-0 pr-1.5`}>.{ench} {isPristine && 'Pristino'}</span>
+                                 <CurrencyInput
+                                    value={priceVal}
+                                    onChange={(v) => handlePriceChange(item.id, v)}
+                                    className={`text-xs font-black text-right bg-transparent w-full min-w-[50px] outline-none text-on-surface group-hover:${enchColor}`}
+                                 />
+                               </div>
+                             );
+                          })}
+                        </div>
+                     </td>
+                   );
+                })}
+
+              </tr>
+            ))}
+
+            {groupedItems.length === 0 && (
+                <tr>
+                    <td colSpan={6} className="text-center py-10 opacity-50">
+                        <p className="text-sm font-bold">Nenhum item encontrado nesta categoria.</p>
+                    </td>
+                </tr>
+            )}
+            
+          </tbody>
+        </table>
+      </div>
+{/* Custom Scrollbars applied via global css or tailwind plugins usually. We'll rely on browser native for now or simple styling */}
     </div>
   );
 };

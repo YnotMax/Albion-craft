@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preços de Itens - Matriz Condensada</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --surface: #0f1115;
+      --surface-container: #1a1d24;
+      --surface-container-high: #22262f;
+      --primary: #10b981;
+      --secondary: #f59e0b;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+</head>
+<body class="bg-[#0f1115] text-zinc-300 font-['Inter'] min-h-screen flex">
+  
+  <div class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-black text-white">Consulta de Preços</h1>
+        <p class="text-zinc-400 text-sm mt-1">Layout v1: Matriz de Encantamentos (Item/Tier x Encantamento)</p>
+      </div>
+      <button class="bg-primary/20 text-[#10b981] px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm">sync</span>
+        Sincronizar API
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-[#1a1d24] p-5 rounded-2xl border border-zinc-800/50 shadow-lg">
+      <div class="space-y-1.5">
+        <label class="text-[10px] uppercase font-bold text-zinc-500">Categoria</label>
+        <select class="w-full bg-[#22262f] border-none rounded-lg p-2.5 text-sm text-white focus:ring-1 focus:ring-primary outline-none">
+          <option>Adagas</option>
+          <option>Arcos</option>
+        </select>
+      </div>
+      <div class="space-y-1.5">
+        <label class="text-[10px] uppercase font-bold text-zinc-500">Cidade</label>
+        <select class="w-full bg-[#22262f] border-none rounded-lg p-2.5 text-sm text-white focus:ring-1 focus:ring-primary outline-none">
+          <option>Caerleon</option>
+          <option>Bridgewatch</option>
+        </select>
+      </div>
+      <div class="space-y-1.5">
+        <label class="text-[10px] uppercase font-bold text-zinc-500">Qualidade</label>
+        <select class="w-full bg-[#22262f] border-none rounded-lg p-2.5 text-sm text-white focus:ring-1 focus:ring-primary outline-none">
+          <option>Qualquer</option>
+          <option>Normal</option>
+          <option>Boa</option>
+          <option>Excepcional</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="bg-[#1a1d24] rounded-2xl border border-zinc-800/50 shadow-lg overflow-hidden">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-[#22262f] text-[10px] uppercase text-zinc-500 font-black tracking-widest border-b border-zinc-700/50">
+            <th class="p-4 w-64">Item / Tier</th>
+            <th class="p-4 text-center">.0 Comum</th>
+            <th class="p-4 text-center">.1 Incomum</th>
+            <th class="p-4 text-center">.2 Raro</th>
+            <th class="p-4 text-center">.3 Excepcional</th>
+            <th class="p-4 text-center">.4 Pristino</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-800/50">
+          
+          <!-- Item Group Head -->
+          <tr class="bg-zinc-800/20">
+            <td colspan="6" class="px-4 py-2 flex items-center gap-3">
+              <img src="https://render.albiononline.com/v1/item/T4_MAIN_DAGGER.png" class="w-8 h-8 rounded bg-black/40" />
+              <span class="font-bold text-sm text-amber-500">Sangra-letra</span>
+            </td>
+          </tr>
+          
+          <!-- Tiers Row -->
+          <tr class="hover:bg-zinc-800/30 transition-colors">
+            <td class="p-4">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 flex items-center justify-center bg-zinc-800 text-xs font-bold rounded text-zinc-300">T4</div>
+              </div>
+            </td>
+            <td class="p-4 text-center"><div class="text-sm font-bold text-white">45.000</div><div class="text-[9px] text-zinc-500">Há 5m</div></td>
+            <td class="p-4 text-center"><div class="text-sm font-bold text-[#10b981]">52.190</div><div class="text-[9px] text-zinc-500">Há 12m</div></td>
+            <td class="p-4 text-center"><div class="text-sm font-bold text-blue-400">71.000</div><div class="text-[9px] text-zinc-500">Atual</div></td>
+            <td class="p-4 text-center"><div class="text-sm font-bold text-purple-400">105.000</div><div class="text-[9px] text-zinc-500">Há 1h</div></td>
+            <td class="p-4 text-center"><div class="text-sm font-bold text-amber-400">450.000</div><div class="text-[9px] text-zinc-500">Há 2d</div></td>
+          </tr>
+          <tr class="hover:bg-zinc-800/30 transition-colors">
+            <td class="p-4">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 flex items-center justify-center bg-zinc-800 text-xs font-bold rounded text-zinc-300">T5</div>
+              </div>
+            </td>
+            <td class="p-4 text-center"><div class="text-sm font-bold text-white">75.000</div><div class="text-[9px] text-zinc-500">Há 5m</div></td>
+            <td class="p-4 text-center"><div class="text-sm font-bold text-[#10b981]">92.190</div><div class="text-[9px] text-zinc-500">Há 12m</div></td>
+            <td class="p-4 text-center"><div class="text-sm font-bold text-blue-400">121.000</div><div class="text-[9px] text-zinc-500">Atual</div></td>
+            <td class="p-4 text-center"><div class="text-sm font-bold text-purple-400">205.000</div><div class="text-[9px] text-zinc-500">Há 1h</div></td>
+            <td class="p-4 text-center"><div class="text-sm font-bold text-amber-400">850.000</div><div class="text-[9px] text-zinc-500">Há 2d</div></td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</body>
+</html>
