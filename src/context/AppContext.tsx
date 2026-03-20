@@ -14,7 +14,7 @@ interface AppContextType {
   setBuyCity: (city: string) => void;
   setSellCity: (city: string) => void;
   setCalculatorState: (calcState: any) => void;
-  syncPrices: (itemIds: string[]) => Promise<void>;
+  syncPrices: (itemIds: string[], targetQuality?: number) => Promise<void>;
   isSyncing: boolean;
   syncMessage: string | null;
 }
@@ -190,7 +190,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setState((prev) => ({ ...prev, calculatorState: calcState }));
   };
 
-  const syncPrices = async (itemIds: string[]) => {
+  const syncPrices = async (itemIds: string[], targetQuality?: number) => {
     if (!itemIds.length) return;
     setIsSyncing(true);
     setSyncMessage(`Iniciando sincronização de ${itemIds.length} itens...`);
@@ -215,8 +215,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
           
           const serverPrefix = state.server === 'west' ? 'west' : state.server;
-          // Fetch qualities 1 and 3 (Outstanding)
-          const url = `https://${serverPrefix}.albion-online-data.com/api/v2/stats/prices/${chunk.join(',')}?locations=${state.buyCity},${state.sellCity}&qualities=1,3`;
+          // Fetch specific quality if requested, otherwise qualities 1 and 3 (Outstanding)
+          const qualitiesParam = targetQuality ? `${targetQuality}` : `1,3`;
+          const url = `https://${serverPrefix}.albion-online-data.com/api/v2/stats/prices/${chunk.join(',')}?locations=${state.buyCity},${state.sellCity}&qualities=${qualitiesParam}`;
           
           const response = await fetch(url, { signal: controller.signal });
           clearTimeout(timeoutId);
@@ -247,9 +248,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             // Process Buy City data (we want buy_price_max, prefer quality 1 for resources, but take what's available)
             const buyCityEntries = itemEntries.filter(e => e.city === state.buyCity);
             if (buyCityEntries.length > 0) {
-              // Prefer quality 1 for buying materials, fallback to 3
-              let bestBuyEntry = buyCityEntries.find(e => e.quality === 1 && (e.buy_price_max > 0 || e.sell_price_min > 0)) 
-                              || buyCityEntries.find(e => e.quality === 3 && (e.buy_price_max > 0 || e.sell_price_min > 0));
+              let bestBuyEntry = null;
+              if (targetQuality) {
+                bestBuyEntry = buyCityEntries.find(e => e.quality === targetQuality && (e.buy_price_max > 0 || e.sell_price_min > 0));
+              } else {
+                // Prefer quality 1 for buying materials, fallback to 3
+                bestBuyEntry = buyCityEntries.find(e => e.quality === 1 && (e.buy_price_max > 0 || e.sell_price_min > 0)) 
+                             || buyCityEntries.find(e => e.quality === 3 && (e.buy_price_max > 0 || e.sell_price_min > 0));
+              }
               
               if (bestBuyEntry) {
                 const useBuyPrice = bestBuyEntry.buy_price_max > 0;
@@ -270,9 +276,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             // Process Sell City data (we want sell_price_min, prefer quality 3 for crafted items, fallback to 1)
             const sellCityEntries = itemEntries.filter(e => e.city === state.sellCity);
             if (sellCityEntries.length > 0) {
-              // Prefer quality 3 for selling crafted items, fallback to 1
-              let bestSellEntry = sellCityEntries.find(e => e.quality === 3 && (e.sell_price_min > 0 || e.buy_price_max > 0)) 
-                               || sellCityEntries.find(e => e.quality === 1 && (e.sell_price_min > 0 || e.buy_price_max > 0));
+              let bestSellEntry = null;
+              if (targetQuality) {
+                bestSellEntry = sellCityEntries.find(e => e.quality === targetQuality && (e.sell_price_min > 0 || e.buy_price_max > 0));
+              } else {
+                // Prefer quality 3 for selling crafted items, fallback to 1
+                bestSellEntry = sellCityEntries.find(e => e.quality === 3 && (e.sell_price_min > 0 || e.buy_price_max > 0)) 
+                             || sellCityEntries.find(e => e.quality === 1 && (e.sell_price_min > 0 || e.buy_price_max > 0));
+              }
               
               if (bestSellEntry) {
                 const useSellPrice = bestSellEntry.sell_price_min > 0;

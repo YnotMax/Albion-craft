@@ -9,6 +9,7 @@ export const Prices: React.FC = () => {
   
   const [priceType, setPriceType] = useState<'sell'|'buy'>('sell');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [syncQuality, setSyncQuality] = useState<number>(0);
 
   const tiers = ['T4', 'T5', 'T6', 'T7', 'T8'];
   const enchantments = ['0', '1', '2', '3', '4'];
@@ -74,7 +75,7 @@ export const Prices: React.FC = () => {
           });
       });
       if (idsToSync.length > 0) {
-          syncPrices(idsToSync);
+          syncPrices(idsToSync, syncQuality > 0 ? syncQuality : undefined);
       }
   };
 
@@ -115,6 +116,22 @@ export const Prices: React.FC = () => {
             </select>
           </div>
           
+          <div className="flex flex-col">
+            <label className="text-[9px] uppercase font-bold text-on-surface-variant ml-1 mb-0.5">Sincronizar c/ Qualidade</label>
+            <select 
+              value={syncQuality}
+              onChange={(e) => setSyncQuality(Number(e.target.value))}
+              className="bg-surface-container-high border border-outline-variant/30 rounded-lg px-3 py-2 text-xs font-bold text-amber-500 focus:border-amber-500 outline-none"
+            >
+              <option value={0}>Padrão (Misto)</option>
+              <option value={1}>1 - Normal</option>
+              <option value={2}>2 - Bom</option>
+              <option value={3}>3 - Excepcional</option>
+              <option value={4}>4 - Excelente</option>
+              <option value={5}>5 - Obra-prima</option>
+            </select>
+          </div>
+
           <div className="flex flex-col">
             <label className="text-[9px] uppercase font-bold text-on-surface-variant ml-1 mb-0.5">Categoria</label>
             <select 
