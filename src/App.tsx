@@ -12,6 +12,7 @@ import { Prices } from './pages/Prices';
 import { Calculator } from './pages/Calculator';
 import { MarketAnalysis } from './pages/MarketAnalysis';
 import { About } from './pages/About';
+import { Transport } from './pages/Transport';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('calculator');
@@ -26,6 +27,8 @@ export default function App() {
         return <Specs />;
       case 'prices':
         return <Prices />;
+      case 'transport':
+        return <Transport />;
       case 'calculator':
         return <Calculator />;
       case 'about':

@@ -17,6 +17,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
     { id: 'market', label: 'Análise de Mercado', icon: 'analytics' },
     { id: 'specs', label: 'Especializações', icon: 'military_tech' },
     { id: 'prices', label: 'Preços', icon: 'payments' },
+    { id: 'transport', label: 'Transporte', icon: 'trending_up' },
     { id: 'about', label: 'Sobre o Projeto', icon: 'info' },
   ];
 
