@@ -274,7 +274,7 @@ export const Transport: React.FC = () => {
                 onChange={e => setBuyCity(e.target.value)}
                 className="w-full bg-surface-container-high border border-outline-variant/30 rounded-lg px-4 py-3 text-sm font-bold text-on-surface focus:border-primary outline-none"
               >
-                {['Fort Sterling', 'Lymhurst', 'Bridgewatch', 'Martlock', 'Thetford', 'Brecilien', 'Arthurs Rest'].map(c => (
+                {['Fort Sterling', 'Lymhurst', 'Bridgewatch', 'Martlock', 'Thetford', 'Brecilien', 'Arthurs Rest', 'Caerleon'].map(c => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
