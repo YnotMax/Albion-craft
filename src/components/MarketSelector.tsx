@@ -8,7 +8,7 @@ interface MarketSelectorProps {
 }
 
 export const MarketSelector: React.FC<MarketSelectorProps> = ({ label, value, onChange }) => {
-  const cities = ['Caerleon', 'Black Market', 'Bridgewatch', 'Fort Sterling', 'Lymhurst', 'Martlock', 'Thetford', 'Brecilien'];
+  const cities = ['Caerleon', 'Black Market', 'Bridgewatch', 'Fort Sterling', 'Lymhurst', 'Martlock', 'Thetford', 'Brecilien', 'Arthurs Rest'];
 
   return (
     <div className="space-y-1.5">
