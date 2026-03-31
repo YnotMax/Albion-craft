@@ -187,6 +187,7 @@ const HAMMER_TYPES = [
   { id: '2H_POLEHAMMER', name: 'Martelo de Haste', artifact: null, resources: { bars: 20, planks: 0 } },
   { id: '2H_HAMMER_UNDEAD', name: 'Guardião de Túmulos', artifact: '2H_HAMMER_UNDEAD', resources: { bars: 20, planks: 0 } },
   { id: '2H_DUALHAMMER_HELL', name: 'Forja-almas', artifact: '2H_DUALHAMMER_HELL', resources: { bars: 20, planks: 0 } },
+  { id: '2H_RAM_KEEPER', name: 'Guardião do Bosque', artifact: '2H_RAM_KEEPER', resources: { bars: 20, planks: 0 } },
   { id: '2H_HAMMER_AVALON', name: 'Martelo de Cristal', artifact: '2H_HAMMER_AVALON', resources: { bars: 20, planks: 0 } },
 ];
 
@@ -252,6 +253,26 @@ const OFFHAND_TYPES = [
   { id: 'OFF_SHIELD_HELL', name: 'Sarcófago', artifact: 'OFF_SHIELD_HELL', resources: { bars: 8 } },
   { id: 'OFF_BOOK_HELL', name: 'Muleta', artifact: 'OFF_BOOK_HELL', resources: { cloth: 8 } },
   { id: 'OFF_TORCH_HELL', name: 'Vela de Sétimo Sono', artifact: 'OFF_TORCH_HELL', resources: { planks: 8 } },
+];
+
+const KNUCKLES_TYPES = [
+  { id: '2H_KNUCKLES_SET1', name: 'Luvas de Brigão', artifact: null, resources: { leather: 12, bars: 8 } },
+  { id: '2H_KNUCKLES_SET2', name: 'Braçadeiras de Batalha', artifact: null, resources: { leather: 12, bars: 8 } },
+  { id: '2H_KNUCKLES_SET3', name: 'Manoplas Espigadas', artifact: null, resources: { leather: 12, bars: 8 } },
+  { id: '2H_KNUCKLES_KEEPER', name: 'Esmagadores Ursíneos', artifact: '2H_KNUCKLES_KEEPER', resources: { leather: 12, bars: 8 } },
+  { id: '2H_KNUCKLES_HELL', name: 'Mãos de Fogo do Inferno', artifact: '2H_KNUCKLES_HELL', resources: { leather: 12, bars: 8 } },
+  { id: '2H_KNUCKLES_UNDEAD', name: 'Golpe-corvo', artifact: '2H_KNUCKLES_UNDEAD', resources: { leather: 12, bars: 8 } },
+  { id: '2H_KNUCKLES_AVALON', name: 'Punhos de Avalon', artifact: '2H_KNUCKLES_AVALON', resources: { leather: 12, bars: 8 } },
+];
+
+const ACCESSORY_TYPES = [
+  { id: 'BAG', name: 'Bolsa', category: 'Bolsas', resources: { leather: 16, cloth: 16 }, artifact: null },
+  { id: 'CAPE', name: 'Capa', category: 'Capas', resources: { leather: 8, cloth: 8 }, artifact: null },
+  { id: 'CAPEITEM_KEEPER', name: 'Capa de Guardião', category: 'Capas de Facção', resources: { leather: 8, cloth: 8 }, artifact: 'CAPEITEM_KEEPER' },
+  { id: 'CAPEITEM_UNDEAD', name: 'Capa de Morto-vivo', category: 'Capas de Facção', resources: { leather: 8, cloth: 8 }, artifact: 'CAPEITEM_UNDEAD' },
+  { id: 'CAPEITEM_MORGANA', name: 'Capa de Morgana', category: 'Capas de Facção', resources: { leather: 8, cloth: 8 }, artifact: 'CAPEITEM_MORGANA' },
+  { id: 'CAPEITEM_DEMON', name: 'Capa de Demônio', category: 'Capas de Facção', resources: { leather: 8, cloth: 8 }, artifact: 'CAPEITEM_DEMON' },
+  { id: 'CAPEITEM_HERETIC', name: 'Capa de Herege', category: 'Capas de Facção', resources: { leather: 8, cloth: 8 }, artifact: 'CAPEITEM_HERETIC' }
 ];
 
 const TIER_FAME: Record<string, number> = {
@@ -883,6 +904,35 @@ TIERS.forEach(tier => {
       if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
       RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] / 4, journalId: `${tier}_JOURNAL_WARRIOR_EMPTY`, baseFocusCost: TIER_FOCUS[tier] / 4 });
     });
+
+    // Knuckles (War Gloves)
+    KNUCKLES_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}.${ench}`, category: 'Luvas de Guerra', tier: tier as any, enchantment: ench as any });
+      const materials = [
+        { itemId: leatherId, amount: item.resources.leather },
+        { itemId: barId, amount: item.resources.bars }
+      ];
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      const resourceMultiplier = (item.resources.leather + item.resources.bars) / 16;
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] * resourceMultiplier, journalId: `${tier}_JOURNAL_WARRIOR_EMPTY`, baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier });
+    });
+
+    // Accessories (Bags and Capes)
+    ACCESSORY_TYPES.forEach(item => {
+      const id = `${tier}_${item.id}${itemEnchSuffix}`;
+      ITEMS.push({ id, name: `${item.name} ${tier}.${ench}`, category: item.category, tier: tier as any, enchantment: ench as any });
+      
+      const materials = [
+        { itemId: leatherId, amount: item.resources.leather },
+        { itemId: clothId, amount: item.resources.cloth }
+      ];
+      if (item.artifact) materials.push({ itemId: `${tier}_ARTIFACT_${item.artifact}`, amount: 1 });
+      
+      const resourceMultiplier = (item.resources.leather + item.resources.cloth) / 16;
+      // Capes and bags typically use Toolmaker, but mostly match Hunter/Mage depending.
+      RECIPES.push({ itemId: id, materials, fame: TIER_FAME[tier] * resourceMultiplier, journalId: `${tier}_JOURNAL_HUNTER_EMPTY`, baseFocusCost: TIER_FOCUS[tier] * resourceMultiplier });
+    });
   });
 });
 
@@ -1064,6 +1114,7 @@ export const SPEC_NODES: SpecNode[] = [
   { id: '2H_POLEHAMMER', name: 'Especialista em Martelo de Haste', baseNodeId: 'baseHammer', multiplier: 250 },
   { id: '2H_HAMMER_UNDEAD', name: 'Especialista em Guardião de Túmulos', baseNodeId: 'baseHammer', multiplier: 250, isArtifact: true },
   { id: '2H_DUALHAMMER_HELL', name: 'Especialista em Forja-almas', baseNodeId: 'baseHammer', multiplier: 250, isArtifact: true },
+  { id: '2H_RAM_KEEPER', name: 'Especialista em Guardião do Bosque', baseNodeId: 'baseHammer', multiplier: 250, isArtifact: true },
   { id: '2H_HAMMER_AVALON', name: 'Especialista em Martelo de Cristal', baseNodeId: 'baseHammer', multiplier: 250, isArtifact: true },
 
   // Crossbows
@@ -1076,26 +1127,53 @@ export const SPEC_NODES: SpecNode[] = [
 
   // Staves (Fire, Holy, Nature, Frost, Curse)
   { id: 'baseFireStaff', name: 'Fabricante de Cajados de Fogo', multiplier: 30 },
-  { id: 'FIRE_STAFF_MAIN', name: 'Especialista em Cajado de Fogo', baseNodeId: 'baseFireStaff', multiplier: 250 },
-  { id: 'FIRE_STAFF_2H', name: 'Especialista em Grande Cajado de Fogo', baseNodeId: 'baseFireStaff', multiplier: 250 },
-  { id: 'FIRE_STAFF_INFERNO', name: 'Especialista em Cajado Infernal', baseNodeId: 'baseFireStaff', multiplier: 250 },
+  { id: 'MAIN_FIRESTAFF', name: 'Especialista em Cajado de Fogo', baseNodeId: 'baseFireStaff', multiplier: 250 },
+  { id: '2H_FIRESTAFF', name: 'Especialista em Grande Cajado de Fogo', baseNodeId: 'baseFireStaff', multiplier: 250 },
+  { id: '2H_INFERNOSTAFF', name: 'Especialista em Cajado Infernal', baseNodeId: 'baseFireStaff', multiplier: 250 },
+  { id: 'MAIN_FIRESTAFF_KEEPER', name: 'Especialista em Cajado de Enxofre', baseNodeId: 'baseFireStaff', multiplier: 250, isArtifact: true },
+  { id: '2H_FIRESTAFF_HELL', name: 'Especialista em Cajado de Brimstone', baseNodeId: 'baseFireStaff', multiplier: 250, isArtifact: true },
 
   { id: 'baseHolyStaff', name: 'Fabricante de Cajados Sagrados', multiplier: 30 },
-  { id: 'HOLY_STAFF_MAIN', name: 'Especialista em Cajado Sagrado', baseNodeId: 'baseHolyStaff', multiplier: 250 },
-  { id: 'HOLY_STAFF_2H', name: 'Especialista em Grande Cajado Sagrado', baseNodeId: 'baseHolyStaff', multiplier: 250 },
+  { id: 'MAIN_HOLYSTAFF', name: 'Especialista em Cajado Sagrado', baseNodeId: 'baseHolyStaff', multiplier: 250 },
+  { id: '2H_HOLYSTAFF', name: 'Especialista em Grande Cajado Sagrado', baseNodeId: 'baseHolyStaff', multiplier: 250 },
+  { id: '2H_DIVINESTAFF', name: 'Especialista em Cajado Divino', baseNodeId: 'baseHolyStaff', multiplier: 250 },
+  { id: 'MAIN_HOLYSTAFF_MORGANA', name: 'Especialista em Cajado da Queda', baseNodeId: 'baseHolyStaff', multiplier: 250, isArtifact: true },
+  { id: '2H_HOLYSTAFF_HELL', name: 'Especialista em Cajado da Redenção', baseNodeId: 'baseHolyStaff', multiplier: 250, isArtifact: true },
 
   { id: 'baseNatureStaff', name: 'Fabricante de Cajados da Natureza', multiplier: 30 },
-  { id: 'NATURE_STAFF_MAIN', name: 'Especialista em Cajado da Natureza', baseNodeId: 'baseNatureStaff', multiplier: 250 },
+  { id: 'MAIN_NATURESTAFF', name: 'Especialista em Cajado da Natureza', baseNodeId: 'baseNatureStaff', multiplier: 250 },
+  { id: '2H_NATURESTAFF', name: 'Especialista em Grande Cajado da Natureza', baseNodeId: 'baseNatureStaff', multiplier: 250 },
+  { id: '2H_WILDSTAFF', name: 'Especialista em Cajado Selvagem', baseNodeId: 'baseNatureStaff', multiplier: 250 },
+  { id: 'MAIN_NATURESTAFF_KEEPER', name: 'Especialista em Cajado da Natureza Garceiro', baseNodeId: 'baseNatureStaff', multiplier: 250, isArtifact: true },
+  { id: '2H_NATURESTAFF_HELL', name: 'Especialista em Cajado da Natureza Silvestre', baseNodeId: 'baseNatureStaff', multiplier: 250, isArtifact: true },
 
   { id: 'baseFrostStaff', name: 'Fabricante de Cajados de Gelo', multiplier: 30 },
-  { id: 'FROST_STAFF_MAIN', name: 'Especialista em Cajado de Gelo', baseNodeId: 'baseFrostStaff', multiplier: 250 },
+  { id: 'MAIN_FROSTSTAFF', name: 'Especialista em Cajado de Gelo', baseNodeId: 'baseFrostStaff', multiplier: 250 },
+  { id: '2H_FROSTSTAFF', name: 'Especialista em Grande Cajado de Gelo', baseNodeId: 'baseFrostStaff', multiplier: 250 },
+  { id: '2H_GLACIALSTAFF', name: 'Especialista em Cajado Glacial', baseNodeId: 'baseFrostStaff', multiplier: 250 },
+  { id: 'MAIN_FROSTSTAFF_KEEPER', name: 'Especialista em Cajado das Bermudas', baseNodeId: 'baseFrostStaff', multiplier: 250, isArtifact: true },
+  { id: '2H_FROSTSTAFF_HELL', name: 'Especialista em Cajado de Gelo de Icicle', baseNodeId: 'baseFrostStaff', multiplier: 250, isArtifact: true },
 
   { id: 'baseCurseStaff', name: 'Fabricante de Cajados Amaldiçoados', multiplier: 30 },
-  { id: 'CURSE_STAFF_MAIN', name: 'Especialista em Cajado Amaldiçoado', baseNodeId: 'baseCurseStaff', multiplier: 250 },
+  { id: 'MAIN_CURSEDSTAFF', name: 'Especialista em Cajado Amaldiçoado', baseNodeId: 'baseCurseStaff', multiplier: 250 },
+  { id: '2H_CURSEDSTAFF', name: 'Especialista em Grande Cajado Amaldiçoado', baseNodeId: 'baseCurseStaff', multiplier: 250 },
+  { id: '2H_DEMONICSTAFF', name: 'Especialista em Cajado Demoníaco', baseNodeId: 'baseCurseStaff', multiplier: 250 },
+  { id: 'MAIN_CURSEDSTAFF_UNDEAD', name: 'Especialista em Cajado de Mãos da Vida', baseNodeId: 'baseCurseStaff', multiplier: 250, isArtifact: true },
+  { id: '2H_CURSEDSTAFF_HELL', name: 'Especialista em Cajado de Danação', baseNodeId: 'baseCurseStaff', multiplier: 250, isArtifact: true },
+  
+  // Quarterstaffs
+  { id: 'baseQuarterstaff', name: 'Fabricante de Cajados de Batalha', multiplier: 30 },
+  { id: '2H_QUARTERSTAFF', name: 'Especialista em Cajado de Batalha', baseNodeId: 'baseQuarterstaff', multiplier: 250 },
+  { id: '2H_IRONCLADSTAFF', name: 'Especialista em Cajado de Batalha Revestido', baseNodeId: 'baseQuarterstaff', multiplier: 250 },
+  { id: '2H_DOUBLEBLADEDSTAFF', name: 'Especialista em Cajado de Lâmina Dupla', baseNodeId: 'baseQuarterstaff', multiplier: 250 },
+  { id: '2H_QUARTERSTAFF_KEEPER', name: 'Especialista em Cajado de Batalha de Urso', baseNodeId: 'baseQuarterstaff', multiplier: 250, isArtifact: true },
 
   // Off-hands
   { id: 'baseOffhand', name: 'Fabricante de Itens Secundários', multiplier: 15 },
   { id: 'OFF_SHIELD', name: 'Especialista em Escudo', baseNodeId: 'baseOffhand', multiplier: 125 },
   { id: 'OFF_BOOK', name: 'Especialista em Tomo de Feitiços', baseNodeId: 'baseOffhand', multiplier: 125 },
   { id: 'OFF_TORCH', name: 'Especialista em Tocha', baseNodeId: 'baseOffhand', multiplier: 125 },
+  { id: 'OFF_SHIELD_HELL', name: 'Especialista em Sarcófago', baseNodeId: 'baseOffhand', multiplier: 125, isArtifact: true },
+  { id: 'OFF_BOOK_HELL', name: 'Especialista em Muleta', baseNodeId: 'baseOffhand', multiplier: 125, isArtifact: true },
+  { id: 'OFF_TORCH_HELL', name: 'Especialista em Vela do Sétimo Sono', baseNodeId: 'baseOffhand', multiplier: 125, isArtifact: true },
 ];
