@@ -33,6 +33,15 @@ interface LiquidityData {
   loading: boolean;
 }
 
+const Tooltip: React.FC<{ text: string; children: React.ReactNode }> = ({ text, children }) => (
+  <div className="group relative flex items-center">
+    {children}
+    <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity w-max max-w-xs bg-surface-container-highest text-on-surface text-[10px] p-2.5 rounded-lg shadow-xl z-50 border border-outline-variant/30 whitespace-pre-wrap">
+      {text}
+    </div>
+  </div>
+);
+
 export const Transport: React.FC = () => {
   const { state } = useAppContext();
   
@@ -382,7 +391,11 @@ export const Transport: React.FC = () => {
           </div>
           <div className="bg-surface-container-high/50 p-3 rounded-lg border border-outline-variant/20 flex items-center gap-4">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-on-surface-variant uppercase">Risco de Gank (UTC)</span>
+              <Tooltip text="Indica a probabilidade de encontrar gankers (PKs) nas red zones baseada no fuso-horário UTC. Horários de Prime Time (18-02h UTC) são os mais perigosos pois os servidores estão cheios.">
+                <span className="text-[10px] font-bold text-on-surface-variant uppercase flex items-center gap-1 cursor-help w-max">
+                  Risco de Gank (UTC) <Info className="w-3 h-3" />
+                </span>
+              </Tooltip>
               <span className={`text-sm font-black ${getHazardLevel().color}`}>{getHazardLevel().text}</span>
             </div>
             <div className="h-8 w-[1px] bg-outline-variant/30" />
@@ -426,7 +439,11 @@ export const Transport: React.FC = () => {
           {/* Filtros de Item */}
           <div className="space-y-3">
             <div>
-              <label className="text-xs uppercase font-bold text-on-surface-variant block mb-1">Categoria (Sem Artefato)</label>
+              <Tooltip text="Filtra itens 'Vanilla', ou seja, que não exigem artefatos para serem craftados. São recomendados para o Mercado Negro pois possuem alta liquidez.">
+                <label className="text-xs uppercase font-bold text-on-surface-variant flex items-center gap-1 mb-1 cursor-help w-max">
+                  Categoria (Sem Art.) <Info className="w-3 h-3" />
+                </label>
+              </Tooltip>
               <select 
                 value={selectedCategory} 
                 onChange={e => setSelectedCategory(e.target.value)}
@@ -462,7 +479,11 @@ export const Transport: React.FC = () => {
           {/* Configurações Adicionais */}
           <div className="space-y-3">
             <div>
-              <label className="text-xs uppercase font-bold text-on-surface-variant block mb-1">Margem Mínima (%)</label>
+              <Tooltip text="Oportunidades com lucro percentual abaixo deste valor não aparecem na tabela. Ajuda a excluir lucros pequenos demais para o tempo gasto.">
+                <label className="text-xs uppercase font-bold text-on-surface-variant flex items-center gap-1 mb-1 cursor-help w-max">
+                  Marg. Mínima (%) <Info className="w-3 h-3" />
+                </label>
+              </Tooltip>
               <input 
                 type="number" 
                 value={minProfitMargin} 
@@ -473,7 +494,11 @@ export const Transport: React.FC = () => {
             
             <div className="pt-2 flex flex-col gap-2">
               <div>
-                <label className="text-xs uppercase font-bold text-on-surface-variant block mb-1">Modo de Trade</label>
+                <Tooltip text="Venda Rápida: Vende imediatamente p/ Compra Direta (só 4/8% taxa). Ordem: Você cria ordem de venda, demora mais, mas paga taxa normal + 2.5% de Setup Fee.">
+                  <label className="text-xs uppercase font-bold text-on-surface-variant flex items-center gap-1 mb-1 cursor-help w-max">
+                    Modo de Trade <Info className="w-3 h-3" />
+                  </label>
+                </Tooltip>
                 <div className="flex bg-surface-container-high rounded-lg p-1">
                   <button 
                     onClick={() => setTradeMode('instant')}
@@ -491,25 +516,29 @@ export const Transport: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-2 mt-1">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={includeHighQuality} 
-                    onChange={e => setIncludeHighQuality(e.target.checked)}
-                    className="w-4 h-4 rounded text-primary bg-surface-container border-outline-variant/30 focus:ring-primary focus:ring-offset-surface"
-                  />
-                  <span className="text-xs font-bold text-on-surface">Qual. 4 e 5</span>
-                </label>
+                <Tooltip text="Busca qualidades Excelente (4) e Obra-Prima (5). Tem menos saída, mas lucros são picos.">
+                  <label className="flex items-center gap-2 cursor-pointer w-max">
+                    <input 
+                      type="checkbox" 
+                      checked={includeHighQuality} 
+                      onChange={e => setIncludeHighQuality(e.target.checked)}
+                      className="w-4 h-4 rounded text-primary bg-surface-container border-outline-variant/30 focus:ring-primary focus:ring-offset-surface"
+                    />
+                    <span className="text-xs font-bold text-on-surface">Qual. 4 e 5</span>
+                  </label>
+                </Tooltip>
                 
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={showUpgradeFlips} 
-                    onChange={e => setShowUpgradeFlips(e.target.checked)}
-                    className="w-4 h-4 rounded text-primary bg-surface-container border-outline-variant/30 focus:ring-primary focus:ring-offset-surface"
-                  />
-                  <span className="text-xs font-bold text-on-surface">Upgrade Flip</span>
-                </label>
+                <Tooltip text="Mostra lucro de comprar o item cru (.0) e encantar com Runas/Almas antes de vender. Adiciona (UPGRADE) se for viável.">
+                  <label className="flex items-center gap-2 cursor-pointer w-max -ml-2">
+                    <input 
+                      type="checkbox" 
+                      checked={showUpgradeFlips} 
+                      onChange={e => setShowUpgradeFlips(e.target.checked)}
+                      className="w-4 h-4 rounded text-primary bg-surface-container border-outline-variant/30 focus:ring-primary focus:ring-offset-surface"
+                    />
+                    <span className="text-xs font-bold text-on-surface">Upgrade Flip</span>
+                  </label>
+                </Tooltip>
               </div>
 
               <div className="text-[10px] text-on-surface-variant leading-tight">
@@ -577,10 +606,18 @@ export const Transport: React.FC = () => {
                 <th className="px-4 py-3 text-center">Qualidade</th>
                 <th className="px-4 py-3 text-right">Compra / Custo</th>
                 <th className="px-4 py-3 text-right">Venda Destino</th>
-                <th className="px-4 py-3 text-center">Liquidez Hist.</th>
+                <th className="px-4 py-3 text-center">
+                  <Tooltip text="Consulta vendas dos últimos 7 dias.\nAbaixo de 5/dia: Ruim.\nAcima de 20/dia: Excelente.">
+                    <span className="cursor-help flex justify-center items-center gap-1 w-max mx-auto">Liq. Histórica <Info className="w-3 h-3"/></span>
+                  </Tooltip>
+                </th>
                 <th className="px-4 py-3 text-right">Lucro</th>
                 <th className="px-4 py-3 text-center">Margem</th>
-                <th className="px-4 py-3 text-center">Idade Dados</th>
+                <th className="px-4 py-3 text-center">
+                  <Tooltip text="Org: Idade do dado na cidade de quem vende.\nDes: Idade na cidade de destino.\nVermelho pulsante = risco altíssimo de preço errado.">
+                    <span className="cursor-help flex justify-center items-center gap-1 w-max mx-auto">Idade Atualização <Info className="w-3 h-3"/></span>
+                  </Tooltip>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10">
