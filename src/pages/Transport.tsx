@@ -3,8 +3,9 @@ import { useAppContext } from '../context/AppContext';
 import { ITEMS, RECIPES } from '../constants';
 import { RefreshCw, Search, Info, TrendingUp, AlertTriangle, PackageSearch, Clock } from 'lucide-react';
 
-const PREMIUM_TAX = 0.065; // 2.5% setup + 4% transaction
-const NON_PREMIUM_TAX = 0.105; // 2.5% setup + 8% transaction
+const TRANSACTION_TAX_PREMIUM = 0.040; // 4% transaction
+const TRANSACTION_TAX_NON_PREMIUM = 0.080; // 8% transaction
+const SETUP_FEE = 0.025; // 2.5% setup
 
 interface TransportResult {
   itemId: string;
@@ -18,7 +19,18 @@ interface TransportResult {
   sellPrice: number;
   profit: number;
   margin: number;
-  updatedAt: string;
+  buyUpdatedAt: string;
+  sellUpdatedAt: string;
+  isUpgrade?: boolean;
+  baseItemPrice?: number;
+  runePrice?: number;
+  runeNeeded?: number;
+}
+
+interface LiquidityData {
+  avgDaily: number;
+  totalWeek: number;
+  loading: boolean;
 }
 
 export const Transport: React.FC = () => {
@@ -33,6 +45,10 @@ export const Transport: React.FC = () => {
   const [results, setResults] = useState<TransportResult[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [minProfitMargin, setMinProfitMargin] = useState<number>(10); // Minimum 10% profit
+  const [tradeMode, setTradeMode] = useState<'instant' | 'order'>('instant');
+  const [includeHighQuality, setIncludeHighQuality] = useState(false);
+  const [showUpgradeFlips, setShowUpgradeFlips] = useState(false);
+  const [liquidityMap, setLiquidityMap] = useState<Record<string, LiquidityData>>({});
   const [progress, setProgress] = useState({ text: '', percent: 0 });
 
   // Load cached transport results on mount
@@ -124,7 +140,7 @@ export const Transport: React.FC = () => {
         chunks.push(itemIds.slice(i, i + chunkSize));
       }
 
-      const qualities = "1,2,3"; // Normal, Good, Outstanding (exclude Excellent and Masterpiece)
+      const qualities = includeHighQuality ? "1,2,3,4,5" : "1,2,3"; 
       const serverPrefix = state.server === 'west' ? 'west' : state.server;
       
       let allResults: TransportResult[] = [];
@@ -164,9 +180,20 @@ export const Transport: React.FC = () => {
           }
         });
 
-        // Calculate profits
-        const taxRate = isPremium ? PREMIUM_TAX : NON_PREMIUM_TAX;
-        
+        // Get Rune prices if upgrade flips are enabled
+        let runePrices: Record<string, number> = {};
+        if (showUpgradeFlips) {
+          const runeIds = ["T4_RUNE", "T5_RUNE", "T6_RUNE", "T7_RUNE", "T8_RUNE", "T4_SOUL", "T5_SOUL", "T6_SOUL", "T7_SOUL", "T8_SOUL", "T4_RELIC", "T5_RELIC", "T6_RELIC", "T7_RELIC", "T8_RELIC"];
+          const runeUrl = `https://${serverPrefix}.albion-online-data.com/api/v2/stats/prices/${runeIds.join(',')}?locations=${buyCity}`;
+          try {
+            const rResp = await fetch(runeUrl);
+            if (rResp.ok) {
+              const rData = await rResp.json();
+              rData.forEach((r: any) => { runePrices[r.item_id] = r.sell_price_min > 0 ? r.sell_price_min : r.buy_price_max; });
+            }
+          } catch (e) { console.error("Rune fetch error", e); }
+        }
+
         Object.keys(itemDataMap).forEach(itemId => {
           const itemBase = ITEMS.find(i => i.id === itemId);
           if (!itemBase) return;
@@ -176,20 +203,22 @@ export const Transport: React.FC = () => {
             const entryPairs = itemDataMap[itemId][quality];
             
             if (entryPairs && entryPairs.buyCityData && entryPairs.sellCityData) {
-              // Buy order from Royal City: We look at sell_price_min as the instant buy price
               const buyPrice = entryPairs.buyCityData.sell_price_min; 
               
-              // Sell order to Black Market: We look at buy_price_max as the instant sell price
-              const sellPrice = entryPairs.sellCityData.buy_price_max;
+              let sellPrice = 0;
+              if (tradeMode === 'instant') {
+                sellPrice = entryPairs.sellCityData.buy_price_max;
+              } else {
+                sellPrice = entryPairs.sellCityData.sell_price_min > 0 
+                  ? entryPairs.sellCityData.sell_price_min 
+                  : entryPairs.sellCityData.buy_price_max * 1.1;
+              }
 
               if (buyPrice > 0 && sellPrice > 0) {
-                const profit = (sellPrice * (1 - taxRate)) - buyPrice;
+                const baseTaxRate = isPremium ? TRANSACTION_TAX_PREMIUM : TRANSACTION_TAX_NON_PREMIUM;
+                const totalTaxRate = tradeMode === 'instant' ? baseTaxRate : baseTaxRate + SETUP_FEE;
+                const profit = (sellPrice * (1 - totalTaxRate)) - buyPrice;
                 const margin = (profit / buyPrice) * 100;
-
-                // Only find latest date between the two operations
-                const d1 = new Date(entryPairs.buyCityData.sell_price_min_date + "Z");
-                const d2 = new Date(entryPairs.sellCityData.buy_price_max_date + "Z");
-                const latestDate = d1 > d2 ? d1 : d2;
 
                 if (margin >= minProfitMargin) {
                   allResults.push({
@@ -199,14 +228,67 @@ export const Transport: React.FC = () => {
                     enchantment: itemBase.enchantment,
                     quality,
                     buyCity,
-                    sellCity: entryPairs.sellCityData.city, // Real city matched (Black Market)
+                    sellCity: entryPairs.sellCityData.city,
                     buyPrice,
                     sellPrice,
                     profit,
                     margin,
-                    updatedAt: latestDate.toISOString()
+                    buyUpdatedAt: entryPairs.buyCityData.sell_price_min_date + "Z",
+                    sellUpdatedAt: entryPairs.sellCityData.buy_price_max_date + "Z"
                   });
                 }
+              }
+
+              // UPGRADE FLIP LOGIC
+              if (showUpgradeFlips && itemBase.enchantment === '0') {
+                const encLevels = ['1', '2', '3'];
+                encLevels.forEach(level => {
+                  const targetId = itemId + "@" + level;
+                  const targetEntry = itemDataMap[targetId]?.[quality];
+                  if (!targetEntry || !targetEntry.sellCityData) return;
+
+                  const runeType = level === '1' ? 'RUNE' : level === '2' ? 'SOUL' : 'RELIC';
+                  const runeId = `${itemBase.tier}_${runeType}`;
+                  const rPrice = runePrices[runeId] || 0;
+                  
+                  const recipe = RECIPES.find(r => r.itemId.startsWith(itemId));
+                  const baseResources = recipe ? recipe.materials.reduce((acc, m) => acc + m.amount, 0) : 24;
+                  const runesNeeded = baseResources;
+
+                  if (rPrice > 0 && buyPrice > 0) {
+                    const upgradeCost = buyPrice + (rPrice * runesNeeded);
+                    const tSellPrice = tradeMode === 'instant' ? targetEntry.sellCityData.buy_price_max : targetEntry.sellCityData.sell_price_min;
+                    
+                    if (tSellPrice > 0) {
+                      const baseTaxRate = isPremium ? TRANSACTION_TAX_PREMIUM : TRANSACTION_TAX_NON_PREMIUM;
+                      const totalTaxRate = tradeMode === 'instant' ? baseTaxRate : baseTaxRate + SETUP_FEE;
+                      const uProfit = (tSellPrice * (1 - totalTaxRate)) - upgradeCost;
+                      const uMargin = (uProfit / upgradeCost) * 100;
+
+                      if (uMargin >= minProfitMargin) {
+                        allResults.push({
+                          itemId: targetId,
+                          name: itemBase.name + " (UPGRADE)",
+                          tier: itemBase.tier,
+                          enchantment: level,
+                          quality,
+                          buyCity,
+                          sellCity: targetEntry.sellCityData.city,
+                          buyPrice: upgradeCost,
+                          sellPrice: tSellPrice,
+                          profit: uProfit,
+                          margin: uMargin,
+                          buyUpdatedAt: entryPairs.buyCityData.sell_price_min_date + "Z",
+                          sellUpdatedAt: targetEntry.sellCityData.buy_price_max_date + "Z",
+                          isUpgrade: true,
+                          baseItemPrice: buyPrice,
+                          runePrice: rPrice,
+                          runeNeeded: runesNeeded
+                        });
+                      }
+                    }
+                  }
+                });
               }
             }
           });
@@ -241,10 +323,42 @@ export const Transport: React.FC = () => {
   };
 
   const getTimeAgo = (dateStr: string) => {
-    const minDiff = Math.round((new Date().getTime() - new Date(dateStr).getTime()) / 60000);
-    if (minDiff < 60) return `${minDiff} min atrás`;
+    const minDiff = Math.max(0, Math.round((new Date().getTime() - new Date(dateStr).getTime()) / 60000));
+    if (minDiff < 60) return `${minDiff}m`;
     const hs = Math.floor(minDiff / 60);
-    return `${hs}h atrás`;
+    return `${hs}h`;
+  };
+
+  const getFreshnessColor = (dateStr: string, isSellSide: boolean) => {
+    const minDiff = Math.max(0, Math.round((new Date().getTime() - new Date(dateStr).getTime()) / 60000));
+    const limit = isSellSide ? 45 : 120; // 45m for Black Market, 2h for Royals
+    if (minDiff <= limit) return 'text-green-400';
+    if (minDiff <= limit * 2) return 'text-yellow-400';
+    return 'text-red-400 animate-pulse';
+  };
+
+  const getHazardLevel = () => {
+    const hour = new Date().getUTCHours();
+    if (hour >= 10 && hour <= 12) return { text: 'BAIXO (Reset)', color: 'text-green-400', desc: 'Pós-manutenção. Geralmente mais seguro.' };
+    if (hour >= 18 || hour <= 2) return { text: 'CRÍTICO (Prime)', color: 'text-red-500', desc: 'Horário de pico. Gankers em todo lugar!' };
+    return { text: 'MÉDIO', color: 'text-yellow-400', desc: 'Atividade normal nas Red Zones.' };
+  };
+
+  const fetchLiquidity = async (itemId: string) => {
+    setLiquidityMap(prev => ({ ...prev, [itemId]: { avgDaily: 0, totalWeek: 0, loading: true } }));
+    try {
+      const serverPrefix = state.server === 'west' ? 'west' : state.server;
+      const url = `https://${serverPrefix}.albion-online-data.com/api/v2/stats/history/${itemId}?locations=Black Market&qualities=1,2,3`;
+      const resp = await fetch(url);
+      if (resp.ok) {
+        const data = await resp.json();
+        const last7Days = data[0]?.data?.slice(-7) || [];
+        const total = last7Days.reduce((acc: number, d: any) => acc + d.item_count, 0);
+        setLiquidityMap(prev => ({ ...prev, [itemId]: { avgDaily: Math.round(total / 7), totalWeek: total, loading: false } }));
+      }
+    } catch (e) {
+      setLiquidityMap(prev => ({ ...prev, [itemId]: { avgDaily: 0, totalWeek: 0, loading: false } }));
+    }
   };
 
   const toggleTier = (t: string) => {
@@ -255,14 +369,27 @@ export const Transport: React.FC = () => {
 
   return (
     <div className="space-y-6 font-['Inter'] pb-10">
-      <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10 shadow-lg">
-        <h1 className="text-2xl font-black text-on-surface flex items-center gap-3">
-          <TrendingUp className="text-primary w-8 h-8" />
-          Transporte & Flip (Mercado Negro)
-        </h1>
-        <p className="text-on-surface-variant text-sm mt-2">
-          Encontre oportunidades de compra nas Cidades Reais para venda no Mercado Negro de Caerleon. Equipamento sem artefato recomendado (alta rotação).
-        </p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-black text-on-surface flex items-center gap-3">
+              <TrendingUp className="text-primary w-8 h-8" />
+              Transporte & Flip (Mercado Negro)
+            </h1>
+            <p className="text-on-surface-variant text-sm mt-1">
+              Análise de arbitragem avançada com projeção de encantamentos e Risco-Brasil Albion.
+            </p>
+          </div>
+          <div className="bg-surface-container-high/50 p-3 rounded-lg border border-outline-variant/20 flex items-center gap-4">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-on-surface-variant uppercase">Risco de Gank (UTC)</span>
+              <span className={`text-sm font-black ${getHazardLevel().color}`}>{getHazardLevel().text}</span>
+            </div>
+            <div className="h-8 w-[1px] bg-outline-variant/30" />
+            <p className="text-[10px] text-on-surface-variant max-w-[150px] leading-tight">
+              {getHazardLevel().desc}
+            </p>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
           {/* Cidades */}
@@ -334,7 +461,7 @@ export const Transport: React.FC = () => {
           {/* Configurações Adicionais */}
           <div className="space-y-3">
             <div>
-              <label className="text-xs uppercase font-bold text-on-surface-variant block mb-1">Margem Mínima de Lucro (%)</label>
+              <label className="text-xs uppercase font-bold text-on-surface-variant block mb-1">Margem Mínima (%)</label>
               <input 
                 type="number" 
                 value={minProfitMargin} 
@@ -342,17 +469,52 @@ export const Transport: React.FC = () => {
                 className="w-full bg-surface-container-high border border-outline-variant/30 rounded-lg px-4 py-3 text-sm font-bold text-on-surface focus:border-primary outline-none"
               />
             </div>
-            <div className="pt-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={isPremium} 
-                  onChange={e => setIsPremium(e.target.checked)}
-                  className="w-4 h-4 rounded text-primary bg-surface-container border-outline-variant/30 focus:ring-primary focus:ring-offset-surface"
-                />
-                <span className="text-sm font-bold text-on-surface">Conta Premium (Taxa 6.5%)</span>
-              </label>
-              {!isPremium && <span className="text-xs text-red-400 block ml-6 mt-1">Taxa sem premium: 10.5%</span>}
+            
+            <div className="pt-2 flex flex-col gap-2">
+              <div>
+                <label className="text-xs uppercase font-bold text-on-surface-variant block mb-1">Modo de Trade</label>
+                <div className="flex bg-surface-container-high rounded-lg p-1">
+                  <button 
+                    onClick={() => setTradeMode('instant')}
+                    className={`flex-1 py-1.5 px-2 rounded-md text-[10px] font-bold transition-colors ${tradeMode === 'instant' ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+                  >
+                    Venda Rápida
+                  </button>
+                  <button 
+                    onClick={() => setTradeMode('order')}
+                    className={`flex-1 py-1.5 px-2 rounded-md text-[10px] font-bold transition-colors ${tradeMode === 'order' ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+                  >
+                    Ordem de Venda
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={includeHighQuality} 
+                    onChange={e => setIncludeHighQuality(e.target.checked)}
+                    className="w-4 h-4 rounded text-primary bg-surface-container border-outline-variant/30 focus:ring-primary focus:ring-offset-surface"
+                  />
+                  <span className="text-xs font-bold text-on-surface">Qual. 4 e 5</span>
+                </label>
+                
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={showUpgradeFlips} 
+                    onChange={e => setShowUpgradeFlips(e.target.checked)}
+                    className="w-4 h-4 rounded text-primary bg-surface-container border-outline-variant/30 focus:ring-primary focus:ring-offset-surface"
+                  />
+                  <span className="text-xs font-bold text-on-surface">Upgrade Flip</span>
+                </label>
+              </div>
+
+              <div className="text-[10px] text-on-surface-variant leading-tight">
+                Taxa aplicada: <span className="font-bold text-primary">{(tradeMode === 'instant' ? (isPremium ? 4 : 8) : (isPremium ? 6.5 : 10.5))}%</span>
+                {tradeMode === 'instant' ? ' (Sem setup fee)' : ' (Inclui 2.5% setup)'}
+              </div>
             </div>
           </div>
 
@@ -412,11 +574,12 @@ export const Transport: React.FC = () => {
               <tr className="bg-surface-container-high text-[10px] uppercase text-on-surface-variant font-bold border-b border-outline-variant/20">
                 <th className="px-4 py-3 sticky left-0 bg-surface-container-high z-10 w-64 shadow-[2px_0_5px_rgba(0,0,0,0.1)]">Item</th>
                 <th className="px-4 py-3 text-center">Qualidade</th>
-                <th className="px-4 py-3 text-right">Preço Compra ({buyCity})</th>
-                <th className="px-4 py-3 text-right">Preço Venda (Black Market)</th>
-                <th className="px-4 py-3 text-right">Lucro Líquido</th>
+                <th className="px-4 py-3 text-right">Compra / Custo</th>
+                <th className="px-4 py-3 text-right">Venda Destino</th>
+                <th className="px-4 py-3 text-center">Liquidez Hist.</th>
+                <th className="px-4 py-3 text-right">Lucro</th>
                 <th className="px-4 py-3 text-center">Margem</th>
-                <th className="px-4 py-3 text-center w-32">Atualizado há</th>
+                <th className="px-4 py-3 text-center">Idade Dados</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10">
@@ -444,10 +607,34 @@ export const Transport: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right align-middle">
-                    <div className="text-sm font-bold text-red-400">{r.buyPrice.toLocaleString()}</div>
+                    <div className="text-sm font-bold text-red-100">{r.buyPrice.toLocaleString()}</div>
+                    {r.isUpgrade && (
+                      <div className="text-[9px] text-on-surface-variant leading-tight">
+                        Item:{r.baseItemPrice?.toLocaleString()} + {r.runeNeeded}x{r.runePrice}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right align-middle">
                     <div className="text-sm font-bold text-green-400">{r.sellPrice.toLocaleString()}</div>
+                  </td>
+                  <td className="px-4 py-3 text-center align-middle">
+                    {liquidityMap[r.itemId] ? (
+                      liquidityMap[r.itemId].loading ? (
+                        <RefreshCw className="animate-spin w-3 h-3 mx-auto opacity-50" />
+                      ) : (
+                        <div className="text-[10px] font-bold text-on-surface leading-tight">
+                          ~{liquidityMap[r.itemId].avgDaily}/dia
+                          <div className="text-[8px] text-on-surface-variant">sem: {liquidityMap[r.itemId].totalWeek}</div>
+                        </div>
+                      )
+                    ) : (
+                      <button 
+                        onClick={() => fetchLiquidity(r.itemId)}
+                        className="text-[9px] font-black text-primary hover:underline"
+                      >
+                        CHECA VOL
+                      </button>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right align-middle">
                     <div className="text-sm font-black text-amber-400">+{r.profit.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
@@ -458,8 +645,9 @@ export const Transport: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center align-middle">
-                    <div className="text-xs font-bold text-on-surface-variant">
-                      {getTimeAgo(r.updatedAt)}
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className={`text-[9px] font-bold ${getFreshnessColor(r.buyUpdatedAt, false)}`}>Org: {getTimeAgo(r.buyUpdatedAt)}</span>
+                      <span className={`text-[9px] font-bold ${getFreshnessColor(r.sellUpdatedAt, true)}`}>Des: {getTimeAgo(r.sellUpdatedAt)}</span>
                     </div>
                   </td>
                 </tr>
