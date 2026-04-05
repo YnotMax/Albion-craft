@@ -29,20 +29,27 @@ export default function App() {
         return <Prices />;
       case 'transport':
         return <Transport />;
-      case 'calculator':
-        return <Calculator />;
-      case 'about':
-        return <About />;
-      default:
-        return <Dashboard />;
+Expected ")" but found "{"
+        555 |
+          556 |
+          557 | {/* Tabela de Resultados */ }
+          |        ^
+          558 | <div className="bg-surface-container-low rounded-xl border border-outline-variant/10 shadow-xl overflow-x-auto">
+            559|          <div className="p-4 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-high/50">
+              case 'calculator':
+              return <Calculator />;
+              case 'about':
+              return <About />;
+              default:
+              return <Dashboard />;
     }
   };
 
-  return (
-    <AppProvider>
-      <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
-        {renderContent()}
-      </Layout>
-    </AppProvider>
-  );
+              return (
+              <AppProvider>
+                <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
+                  {renderContent()}
+                </Layout>
+              </AppProvider>
+              );
 }

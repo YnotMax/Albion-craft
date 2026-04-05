@@ -369,6 +369,7 @@ export const Transport: React.FC = () => {
 
   return (
     <div className="space-y-6 font-['Inter'] pb-10">
+      <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10 shadow-lg">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black text-on-surface flex items-center gap-3">
