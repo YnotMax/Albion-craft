@@ -230,20 +230,76 @@ export const CapeMarketAnalysis: React.FC = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-h-48 overflow-y-auto pr-2 no-scrollbar">
-              {uniqueMaterials.map(matId => {
+            {(()=>{
+              const baseMats = uniqueMaterials.filter(matId => {
+                const item = ITEMS.find(i => i.id === matId);
+                return !item?.category.includes('Ornamento') && !item?.category.includes('Coraç');
+              });
+              const hearts = uniqueMaterials.filter(matId => {
+                const item = ITEMS.find(i => i.id === matId);
+                return item?.category.includes('Coraç');
+              });
+              const crests = uniqueMaterials.filter(matId => {
+                const item = ITEMS.find(i => i.id === matId);
+                return item?.category.includes('Ornamento');
+              });
+
+              const renderMaterial = (matId: string) => {
                 const item = ITEMS.find(i => i.id === matId);
                 const price = state.prices[matId]?.buy || 0;
+                const name = item ? item.name.replace(` ${selectedTier}.${selectedEnchantment}`, '').replace(` ${selectedTier}`, '') : matId;
+                
+                let colorClass = 'text-on-surface-variant/60';
+                if (item?.category.includes('Coraç')) {
+                  if (name.includes('Fera')) colorClass = 'text-orange-400';
+                  else if (name.includes('Árvore')) colorClass = 'text-green-500';
+                  else if (name.includes('Vinha')) colorClass = 'text-purple-500';
+                  else if (name.includes('Montanha')) colorClass = 'text-sky-200';
+                  else if (name.includes('Pedra')) colorClass = 'text-blue-500';
+                  else if (name.includes('Sombras')) colorClass = 'text-rose-500';
+                  else if (name.includes('Fátuo')) colorClass = 'text-fuchsia-400';
+                  else if (name.includes('Avaloniana')) colorClass = 'text-amber-400';
+                }
+
                 return (
                   <div key={matId} className="space-y-1">
-                    <label className="text-[9px] font-bold text-on-surface-variant/60 uppercase truncate block" title={item?.name}>
-                      {item ? item.name.replace(` ${selectedTier}.${selectedEnchantment}`, '').replace(` ${selectedTier}`, '') : matId}
+                    <label className={`text-[9px] font-bold uppercase truncate block ${colorClass}`} title={item?.name}>
+                      {name}
                     </label>
                     <CurrencyInput value={price} onChange={(val) => handlePriceChange(matId, 'buy', val)} className="text-xs" />
                   </div>
                 );
-              })}
-            </div>
+              };
+
+              return (
+                <div className="max-h-[320px] overflow-y-auto pr-2 no-scrollbar space-y-4">
+                  {baseMats.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-bold uppercase text-primary border-b border-outline-variant/10 pb-1">Base</h4>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        {baseMats.map(renderMaterial)}
+                      </div>
+                    </div>
+                  )}
+                  {hearts.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-bold uppercase text-secondary border-b border-outline-variant/10 pb-1">Corações & Magia</h4>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        {hearts.map(renderMaterial)}
+                      </div>
+                    </div>
+                  )}
+                  {crests.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-bold uppercase text-on-surface-variant border-b border-outline-variant/10 pb-1">Ornamentos</h4>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        {crests.map(renderMaterial)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             {syncMessage && (
               <div className="mt-4 p-2 bg-primary/10 border border-primary/20 rounded-lg text-[10px] text-primary flex items-center gap-2">
                 <AlertCircle className="w-3 h-3 shrink-0" />

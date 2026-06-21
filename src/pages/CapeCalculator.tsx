@@ -9,7 +9,7 @@ export const CapeCalculator: React.FC = () => {
   const { state, updatePrice, syncPrices, isSyncing } = useAppContext();
 
   // Filter only Faction Capes
-  const factionCapes = useMemo(() => ITEMS.filter(i => i.category === 'Capas de Facção' || i.category === 'Capas de Artefato'), []);
+  const factionCapes = useMemo(() => ITEMS.filter(i => i.category === 'Capas' || i.category === 'Capas de Facção' || i.category === 'Capas de Artefato'), []);
   
   const availableTiers = useMemo(() => Array.from(new Set(factionCapes.map(c => c.tier))).sort(), [factionCapes]);
   const [selectedTier, setSelectedTier] = useState<string>(availableTiers[0] || 'T4');
@@ -40,16 +40,17 @@ export const CapeCalculator: React.FC = () => {
 
   const recipe = availableRecipes.find(r => r.itemId === selectedRecipeId);
   const item = factionCapes.find(i => i.id === selectedRecipeId);
+  const isNormalCape = item?.category === 'Capas';
 
   const calculations = useMemo(() => {
     if (!recipe || !item) return null;
 
     // Faction cape recipe usually has: Normal Cape, Crest, Hearts
-    const normalCapeRef = recipe.materials.find(m => m.itemId.includes('_CAPE') && !m.itemId.includes('CAPEITEM'));
-    const normalCapeItem = ITEMS.find(i => i.id === normalCapeRef?.itemId);
+    const normalCapeRef = isNormalCape ? undefined : recipe.materials.find(m => m.itemId.includes('_CAPE') && !m.itemId.includes('CAPEITEM'));
+    const normalCapeItem = isNormalCape ? item : ITEMS.find(i => i.id === normalCapeRef?.itemId);
     
     // Normal cape recipe
-    const normalCapeRecipe = RECIPES.find(r => r.itemId === normalCapeRef?.itemId);
+    const normalCapeRecipe = isNormalCape ? recipe : RECIPES.find(r => r.itemId === normalCapeRef?.itemId);
     
     // Step 1: Base Cape in Brecilien
     let baseCapeCost = 0;
@@ -68,7 +69,7 @@ export const CapeCalculator: React.FC = () => {
       baseCapeCost = baseMaterialsCost + (brecilienFee * quantity);
     } else {
       // Buying base cape directly
-      const price = state.prices[normalCapeRef?.itemId || '']?.buy || 0;
+      const price = state.prices[normalCapeRef?.itemId || item.id]?.buy || 0;
       baseCapeCost = price * quantity;
     }
 
@@ -76,18 +77,20 @@ export const CapeCalculator: React.FC = () => {
     let factionMaterialsCost = 0;
     const factionMaterialsDetails = [];
     
-    recipe.materials.forEach(mat => {
-      if (mat.itemId === normalCapeRef?.itemId) return; // Handled as baseCapeCost
-      
-      const matItem = ITEMS.find(i => i.id === mat.itemId);
-      const price = state.prices[mat.itemId]?.buy || 0;
-      const effectiveAmount = mat.amount * (1 - (royalRrr / 100)) * quantity;
-      const cost = effectiveAmount * price;
-      factionMaterialsCost += cost;
-      factionMaterialsDetails.push({ ...mat, name: matItem?.name, price, effectiveAmount, cost });
-    });
+    if (!isNormalCape) {
+      recipe.materials.forEach(mat => {
+        if (mat.itemId === normalCapeRef?.itemId) return; // Handled as baseCapeCost
+        
+        const matItem = ITEMS.find(i => i.id === mat.itemId);
+        const price = state.prices[mat.itemId]?.buy || 0;
+        const effectiveAmount = mat.amount * (1 - (royalRrr / 100)) * quantity;
+        const cost = effectiveAmount * price;
+        factionMaterialsCost += cost;
+        factionMaterialsDetails.push({ ...mat, name: matItem?.name, price, effectiveAmount, cost });
+      });
+    }
 
-    const totalCost = baseCapeCost + factionMaterialsCost + (royalFee * quantity);
+    const totalCost = baseCapeCost + factionMaterialsCost + (isNormalCape ? 0 : royalFee * quantity);
 
     const sellPrice = state.prices[item.id]?.sell || 0;
     const grossRevenue = sellPrice * quantity;
@@ -107,9 +110,9 @@ export const CapeCalculator: React.FC = () => {
       taxCost,
       netProfit,
       roi,
-      normalCapeId: normalCapeRef?.itemId
+      normalCapeId: normalCapeRef?.itemId || item.id
     };
-  }, [recipe, item, quantity, brecilienFee, royalFee, brecilienRrr, royalRrr, buyBaseCape, marketTax, state.prices]);
+  }, [recipe, item, quantity, brecilienFee, royalFee, brecilienRrr, royalRrr, buyBaseCape, marketTax, state.prices, isNormalCape]);
 
   const handlePriceChange = (id: string, type: 'buy' | 'sell', val: number) => {
     const currentPrice = state.prices[id] || { buy: 0, sell: 0 };
@@ -213,17 +216,19 @@ export const CapeCalculator: React.FC = () => {
              )}
           </section>
 
-          <section className="bg-surface-container rounded-xl p-6 space-y-5">
-             <h4 className="font-bold text-sm tracking-wide uppercase text-secondary">Cidade Real (Facção)</h4>
-             <div className="space-y-3">
-               <div className="flex justify-between text-[11px] font-bold text-on-surface-variant uppercase"><label>RRR Cidade</label><span>{royalRrr}%</span></div>
-               <input type="range" min="0" max="70" step="0.1" value={royalRrr} onChange={(e) => setRoyalRrr(Number(e.target.value))} className="w-full accent-secondary h-1.5 bg-surface-container-lowest rounded-lg appearance-none cursor-pointer" />
-             </div>
-             <div className="space-y-1.5">
-               <label className="text-[11px] font-bold text-on-surface-variant uppercase">Taxa Cidade Real (Prata/Item)</label>
-               <input type="number" value={royalFee} onChange={(e) => setRoyalFee(Number(e.target.value) || 0)} className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2 px-4 text-on-surface outline-none" />
-             </div>
-          </section>
+          {!isNormalCape && (
+            <section className="bg-surface-container rounded-xl p-6 space-y-5">
+               <h4 className="font-bold text-sm tracking-wide uppercase text-secondary">Cidade Real (Facção)</h4>
+               <div className="space-y-3">
+                 <div className="flex justify-between text-[11px] font-bold text-on-surface-variant uppercase"><label>RRR Cidade</label><span>{royalRrr}%</span></div>
+                 <input type="range" min="0" max="70" step="0.1" value={royalRrr} onChange={(e) => setRoyalRrr(Number(e.target.value))} className="w-full accent-secondary h-1.5 bg-surface-container-lowest rounded-lg appearance-none cursor-pointer" />
+               </div>
+               <div className="space-y-1.5">
+                 <label className="text-[11px] font-bold text-on-surface-variant uppercase">Taxa Cidade Real (Prata/Item)</label>
+                 <input type="number" value={royalFee} onChange={(e) => setRoyalFee(Number(e.target.value) || 0)} className="w-full bg-surface-container-lowest border-none rounded-lg text-sm py-2 px-4 text-on-surface outline-none" />
+               </div>
+            </section>
+          )}
         </div>
 
         <div className="col-span-12 xl:col-span-9 space-y-6">
@@ -255,7 +260,7 @@ export const CapeCalculator: React.FC = () => {
              </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className={`grid grid-cols-1 ${isNormalCape ? '' : 'md:grid-cols-2'} gap-6`}>
              {/* Passo 1: Capa Base */}
              <div className="bg-surface-container-low p-6 rounded-2xl space-y-4">
                 <h4 className="font-bold text-lg text-primary flex items-center gap-2"><span className="material-symbols-outlined">looks_one</span> Obter Capa Base</h4>
@@ -290,25 +295,27 @@ export const CapeCalculator: React.FC = () => {
              </div>
 
              {/* Passo 2: Capa de Facção */}
-             <div className="bg-surface-container-low p-6 rounded-2xl space-y-4">
-                <h4 className="font-bold text-lg text-secondary flex items-center gap-2"><span className="material-symbols-outlined">looks_two</span> Craft Facção</h4>
-                
-                <div className="space-y-2">
-                  {calculations.factionMaterialsDetails.map((mat, idx) => (
-                    <div key={idx} className="bg-surface-container p-3 rounded-xl flex items-center justify-between">
-                      <div>
-                         <p className="text-xs font-bold">{mat.name}</p>
-                         <p className="text-[10px] text-on-surface-variant">Qtd RRR: {Math.ceil(mat.effectiveAmount)}</p>
+             {!isNormalCape && (
+               <div className="bg-surface-container-low p-6 rounded-2xl space-y-4">
+                  <h4 className="font-bold text-lg text-secondary flex items-center gap-2"><span className="material-symbols-outlined">looks_two</span> Craft Facção</h4>
+                  
+                  <div className="space-y-2">
+                    {calculations.factionMaterialsDetails.map((mat, idx) => (
+                      <div key={idx} className="bg-surface-container p-3 rounded-xl flex items-center justify-between">
+                        <div>
+                           <p className="text-xs font-bold">{mat.name}</p>
+                           <p className="text-[10px] text-on-surface-variant">Qtd RRR: {Math.ceil(mat.effectiveAmount)}</p>
+                        </div>
+                        <CurrencyInput value={mat.price} onChange={(val) => handlePriceChange(mat.itemId, 'buy', val)} className="bg-surface-container-lowest w-24 text-right px-2 py-1 rounded text-sm font-bold text-secondary outline-none" />
                       </div>
-                      <CurrencyInput value={mat.price} onChange={(val) => handlePriceChange(mat.itemId, 'buy', val)} className="bg-surface-container-lowest w-24 text-right px-2 py-1 rounded text-sm font-bold text-secondary outline-none" />
+                    ))}
+                    <div className="flex justify-between items-center px-2 pt-2 border-t border-outline-variant/10">
+                       <span className="text-xs font-bold text-on-surface-variant">Custo Adicional (S/ Capa Base)</span>
+                       <span className="text-sm font-bold text-error">{Math.round(calculations.factionMaterialsCost + (royalFee * quantity)).toLocaleString()}</span>
                     </div>
-                  ))}
-                  <div className="flex justify-between items-center px-2 pt-2 border-t border-outline-variant/10">
-                     <span className="text-xs font-bold text-on-surface-variant">Custo Adicional (S/ Capa Base)</span>
-                     <span className="text-sm font-bold text-error">{Math.round(calculations.factionMaterialsCost + (royalFee * quantity)).toLocaleString()}</span>
                   </div>
-                </div>
-             </div>
+               </div>
+             )}
           </div>
 
           <div className="bg-surface-container-low p-6 rounded-2xl border-2 border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
