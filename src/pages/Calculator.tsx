@@ -94,6 +94,7 @@ export const Calculator: React.FC = () => {
   const [usageFee, setUsageFee] = useState<number>(initialCalcState.usageFee);
   const [rrr, setRrr] = useState<number>(initialCalcState.rrr);
   const [useFocus, setUseFocus] = useState<boolean>(initialCalcState.useFocus);
+  const [useJournals, setUseJournals] = useState<boolean>(initialCalcState.useJournals || false);
   const [quantity, setQuantity] = useState<number>(initialCalcState.quantity || 1);
 
   // Save state to AppContext on change
@@ -108,7 +109,7 @@ export const Calculator: React.FC = () => {
       useFocus,
       quantity
     });
-  }, [selectedCategory, selectedTier, selectedEnchantment, selectedRecipeId, usageFee, rrr, useFocus, quantity]);
+  }, [selectedCategory, selectedTier, selectedEnchantment, selectedRecipeId, usageFee, rrr, useFocus, useJournals, quantity]);
   const [marketTax, setMarketTax] = useState<number>(0.065); // 6.5% default
   const [showToast, setShowToast] = useState(false);
   const [rrrToast, setRrrToast] = useState<string | null>(null);
@@ -164,7 +165,7 @@ export const Calculator: React.FC = () => {
     // Journal calculation
     let journalProfit = 0;
     let journalsFilled = 0;
-    if (recipe.journalId) {
+    if (useJournals && recipe.journalId) {
       const emptyPrice = state.prices[recipe.journalId]?.buy || 0;
       const fullId = recipe.journalId.replace('_EMPTY', '_FULL');
       const fullPrice = state.prices[fullId]?.sell || 0;

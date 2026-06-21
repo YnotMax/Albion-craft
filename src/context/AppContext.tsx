@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { AppState, CraftConfig } from '../types';
 
 interface AppContextType {
@@ -193,6 +194,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const syncPrices = async (itemIds: string[], targetQuality?: number) => {
     if (!itemIds.length) return;
     setIsSyncing(true);
+    const toastId = toast.loading(`Sincronizando ${itemIds.length} itens...`);
     setSyncMessage(`Iniciando sincronização de ${itemIds.length} itens...`);
     
     const chunkSize = 50;
@@ -324,8 +326,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           console.error("Failed to fetch prices", error);
           errorCount++;
           if (error.name === 'AbortError') {
+            toast.error(`Tempo limite excedido no lote ${i + 1}.`, { id: toastId });
             setSyncMessage(`Erro: Tempo limite excedido no lote ${i + 1}.`);
             await new Promise(resolve => setTimeout(resolve, 2000)); // Show error briefly
+            toast.loading(`Sincronizando ${itemIds.length} itens...`, { id: toastId });
           }
         }
       }
@@ -335,8 +339,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       
       if (errorCount > 0) {
+        toast.error(`Concluído com erros. ${updatedCount} atualizados.`, { id: toastId });
         setSyncMessage(`Concluído com erros. ${updatedCount} preços atualizados.`);
       } else {
+        toast.success(`Sucesso! ${updatedCount} preços atualizados.`, { id: toastId });
         setSyncMessage(`Sucesso! ${updatedCount} preços atualizados.`);
       }
     } finally {

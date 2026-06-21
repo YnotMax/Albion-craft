@@ -50,13 +50,13 @@ export interface CraftConfig {
   itemId: string;
   timestamp: number;
   group?: string;
-  configSnapshot: {
+  configSnapshot?: {
+    usageFee: number;
     rrr: number;
     useFocus: boolean;
-    usageFee: number;
+    useJournals?: boolean;
     focusCost: number;
     quantity: number;
     prices: Record<string, { buy: number; sell: number; updatedAt?: string }>; // Snapshot of prices at the time
   };
 }
-

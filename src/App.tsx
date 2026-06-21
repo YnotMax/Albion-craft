@@ -13,35 +13,29 @@ import { Calculator } from './pages/Calculator';
 import { MarketAnalysis } from './pages/MarketAnalysis';
 import { About } from './pages/About';
 import { Transport } from './pages/Transport';
+import { CapeCalculator } from './pages/CapeCalculator';
+import { CapeMarketAnalysis } from './pages/CapeMarketAnalysis';
+import { RefiningCalculator } from './pages/RefiningCalculator';
+
+import { Toaster } from 'react-hot-toast';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('calculator');
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'market':
-        return <MarketAnalysis />;
-      case 'specs':
-        return <Specs />;
-      case 'prices':
-        return <Prices />;
-      case 'transport':
-        return <Transport />;
-      case 'calculator':
-        return <Calculator />;
-      case 'about':
-        return <About />;
-      default:
-        return <Dashboard />;
-    }
-  };
-
   return (
     <AppProvider>
+      <Toaster position="bottom-right" toastOptions={{ style: { background: '#333', color: '#fff' } }} />
       <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
-        {renderContent()}
+        <div className={activeTab === 'dashboard' ? 'block' : 'hidden'}><Dashboard /></div>
+        <div className={activeTab === 'market' ? 'block' : 'hidden'}><MarketAnalysis /></div>
+        <div className={activeTab === 'refining' ? 'block' : 'hidden'}><RefiningCalculator /></div>
+        <div className={activeTab === 'specs' ? 'block' : 'hidden'}><Specs /></div>
+        <div className={activeTab === 'prices' ? 'block' : 'hidden'}><Prices /></div>
+        <div className={activeTab === 'transport' ? 'block' : 'hidden'}><Transport /></div>
+        <div className={activeTab === 'calculator' ? 'block' : 'hidden'}><Calculator /></div>
+        <div className={activeTab === 'capes' ? 'block' : 'hidden'}><CapeCalculator /></div>
+        <div className={activeTab === 'cape_market' ? 'block' : 'hidden'}><CapeMarketAnalysis /></div>
+        <div className={activeTab === 'about' ? 'block' : 'hidden'}><About /></div>
       </Layout>
     </AppProvider>
   );

@@ -268,11 +268,6 @@ const KNUCKLES_TYPES = [
 const ACCESSORY_TYPES = [
   { id: 'BAG', name: 'Bolsa', category: 'Bolsas', resources: { leather: 16, cloth: 16 }, artifact: null },
   { id: 'CAPE', name: 'Capa', category: 'Capas', resources: { leather: 8, cloth: 8 }, artifact: null },
-  { id: 'CAPEITEM_KEEPER', name: 'Capa de Guardião', category: 'Capas de Facção', resources: { leather: 8, cloth: 8 }, artifact: 'CAPEITEM_KEEPER' },
-  { id: 'CAPEITEM_UNDEAD', name: 'Capa de Morto-vivo', category: 'Capas de Facção', resources: { leather: 8, cloth: 8 }, artifact: 'CAPEITEM_UNDEAD' },
-  { id: 'CAPEITEM_MORGANA', name: 'Capa de Morgana', category: 'Capas de Facção', resources: { leather: 8, cloth: 8 }, artifact: 'CAPEITEM_MORGANA' },
-  { id: 'CAPEITEM_DEMON', name: 'Capa de Demônio', category: 'Capas de Facção', resources: { leather: 8, cloth: 8 }, artifact: 'CAPEITEM_DEMON' },
-  { id: 'CAPEITEM_HERETIC', name: 'Capa de Herege', category: 'Capas de Facção', resources: { leather: 8, cloth: 8 }, artifact: 'CAPEITEM_HERETIC' }
 ];
 
 const TIER_FAME: Record<string, number> = {
@@ -1177,3 +1172,211 @@ export const SPEC_NODES: SpecNode[] = [
   { id: 'OFF_BOOK_HELL', name: 'Especialista em Muleta', baseNodeId: 'baseOffhand', multiplier: 125, isArtifact: true },
   { id: 'OFF_TORCH_HELL', name: 'Especialista em Vela do Sétimo Sono', baseNodeId: 'baseOffhand', multiplier: 125, isArtifact: true },
 ];
+
+
+// --- CAPE LOGISTICS CALCULATOR EXTENSION ---
+const CITY_HEARTS = [
+  { id: 'T1_FACTION_STEPPE_TOKEN_1', name: 'Coração de Fera' },
+  { id: 'T1_FACTION_FOREST_TOKEN_1', name: 'Coração de Árvore' },
+  { id: 'T1_FACTION_SWAMP_TOKEN_1', name: 'Coração de Vinha' },
+  { id: 'T1_FACTION_MOUNTAIN_TOKEN_1', name: 'Coração de Montanha' },
+  { id: 'T1_FACTION_HIGHLAND_TOKEN_1', name: 'Coração de Pedra' },
+  { id: 'T1_FACTION_CAERLEON_TOKEN_1', name: 'Coração das Sombras' },
+  { id: 'FEY_FAERIE_FIRE', name: 'Fogo Fátuo' },
+  { id: 'QUESTITEM_TOKEN_AVALON', name: 'Energia Avaloniana' }
+];
+
+CITY_HEARTS.forEach(heart => {
+  ITEMS.push({ id: heart.id, name: heart.name, category: 'Corações de Facção', tier: 'T4', enchantment: '0' });
+});
+
+const FACTIONS = [
+  { prefix: 'BRIDGEWATCH', name: 'Bridgewatch', heartId: 'T1_FACTION_STEPPE_TOKEN_1' },
+  { prefix: 'LYMHURST', name: 'Lymhurst', heartId: 'T1_FACTION_FOREST_TOKEN_1' },
+  { prefix: 'THETFORD', name: 'Thetford', heartId: 'T1_FACTION_SWAMP_TOKEN_1' },
+  { prefix: 'FORTSTERLING', name: 'Fort Sterling', heartId: 'T1_FACTION_MOUNTAIN_TOKEN_1' },
+  { prefix: 'MARTLOCK', name: 'Martlock', heartId: 'T1_FACTION_HIGHLAND_TOKEN_1' },
+  { prefix: 'CAERLEON', name: 'Caerleon', heartId: 'T1_FACTION_CAERLEON_TOKEN_1' },
+  { prefix: 'BRECILIEN', name: 'Brecilien', heartId: 'FEY_FAERIE_FIRE' }
+];
+
+const HEART_COUNTS: Record<string, number> = { 'T4': 1, 'T5': 1, 'T6': 3, 'T7': 5, 'T8': 10 };
+
+TIERS.forEach(tier => {
+  ENCHANTMENTS.forEach(ench => {
+    const itemEnchSuffix = ench === '0' ? '' : `@${ench}`;
+    const normalCapeId = `${tier}_CAPE${itemEnchSuffix}`;
+    
+    FACTIONS.forEach(faction => {
+      const crestOfficialId = `${tier}_CAPEITEM_FW_${faction.prefix}_BP`;
+      
+      // Crest only has 1 enchantment level essentially (no .1 .2 .3 for crests)
+      if (ench === '0') {
+        ITEMS.push({ id: crestOfficialId, name: `Ornamento de ${faction.name} ${tier}`, category: 'Ornamentos de Facção', tier: tier as any, enchantment: '0' });
+      }
+
+      const factionCapeId = `${tier}_CAPEITEM_FW_${faction.prefix}${itemEnchSuffix}`;
+      ITEMS.push({ id: factionCapeId, name: `Capa de ${faction.name} ${tier}.${ench}`, category: 'Capas de Facção', tier: tier as any, enchantment: ench as any });
+
+      const materials = [
+        { itemId: normalCapeId, amount: 1 },
+        { itemId: crestOfficialId, amount: 1 }
+      ];
+
+      if (faction.heartId) {
+        materials.push({ itemId: faction.heartId, amount: HEART_COUNTS[tier] });
+      }
+
+      RECIPES.push({
+        itemId: factionCapeId,
+        materials,
+        fame: TIER_FAME[tier] / 2, 
+        baseFocusCost: TIER_FOCUS[tier] / 2,
+        journalId: `${tier}_JOURNAL_TOOLMAKER_EMPTY`
+      });
+    });
+
+    // --- ARTIFACT CAPES (Demon, Undead, Keeper, Morgana, Heretic, Avalon) ---
+    const ARTIFACT_FACTIONS = [
+      { prefix: 'DEMON', capeName: 'Demoníaca', crestName: 'Demoníaco', heartId: 'T1_FACTION_STEPPE_TOKEN_1', artifactId: 'CAPEITEM_DEMON' },
+      { prefix: 'UNDEAD', capeName: 'Morta-Viva', crestName: 'Morto-Vivo', heartId: 'T1_FACTION_MOUNTAIN_TOKEN_1', artifactId: 'CAPEITEM_UNDEAD' },
+      { prefix: 'KEEPER', capeName: 'Protetora', crestName: 'Protetor', heartId: 'T1_FACTION_HIGHLAND_TOKEN_1', artifactId: 'CAPEITEM_KEEPER' },
+      { prefix: 'MORGANA', capeName: 'de Morgana', crestName: 'de Morgana', heartId: 'T1_FACTION_SWAMP_TOKEN_1', artifactId: 'CAPEITEM_MORGANA' },
+      { prefix: 'HERETIC', capeName: 'Herege', crestName: 'Herege', heartId: 'T1_FACTION_FOREST_TOKEN_1', artifactId: 'CAPEITEM_HERETIC' },
+      { prefix: 'AVALON', capeName: 'Avalonia', crestName: 'Avaloniano', heartId: 'QUESTITEM_TOKEN_AVALON', artifactId: 'CAPEITEM_AVALON' },
+      { prefix: 'SMUGGLER', capeName: 'de Contrabandista', crestName: 'de Contrabandista', heartId: 'T1_FACTION_CAERLEON_TOKEN_1', artifactId: 'CAPEITEM_SMUGGLER' }
+    ];
+
+    ARTIFACT_FACTIONS.forEach(art => {
+      // The artifact for capes uses the _BP suffix
+      const crestOfficialId = `${tier}_${art.artifactId}_BP`;
+      
+      if (ench === '0') {
+        ITEMS.push({ id: crestOfficialId, name: `Ornamento ${art.crestName} ${tier}`, category: 'Ornamentos de Artefato', tier: tier as any, enchantment: '0' });
+      }
+
+      const factionCapeId = `${tier}_${art.artifactId}${itemEnchSuffix}`;
+      ITEMS.push({ id: factionCapeId, name: `Capa ${art.capeName} ${tier}.${ench}`, category: 'Capas de Artefato', tier: tier as any, enchantment: ench as any });
+
+      const materials = [
+        { itemId: normalCapeId, amount: 1 },
+        { itemId: crestOfficialId, amount: 1 },
+        { itemId: art.heartId, amount: HEART_COUNTS[tier] }
+      ];
+
+      RECIPES.push({
+        itemId: factionCapeId,
+        materials,
+        fame: TIER_FAME[tier] / 2,
+        baseFocusCost: TIER_FOCUS[tier] / 2,
+        journalId: `${tier}_JOURNAL_TOOLMAKER_EMPTY`
+      });
+    });
+  });
+});
+
+// --- ROYAL ARMOR CALCULATOR EXTENSION ---
+const ROYAL_ARMORS = [
+  // CLOTH
+  { id: 'ARMOR_CLOTH_ROYAL', name: 'Robe Real', baseItemId: 'ARMOR_CLOTH_SET1', sigils: 8, category: 'Armadura de Tecido' },
+  { id: 'HEAD_CLOTH_ROYAL', name: 'Capote Real', baseItemId: 'HEAD_CLOTH_SET1', sigils: 4, category: 'Capotes de Tecido' },
+  { id: 'SHOES_CLOTH_ROYAL', name: 'Sandálias Reais', baseItemId: 'SHOES_CLOTH_SET1', sigils: 4, category: 'Sapatos de Tecido' },
+  
+  // LEATHER
+  { id: 'ARMOR_LEATHER_ROYAL', name: 'Casaco Real', baseItemId: 'ARMOR_LEATHER_SET1', sigils: 8, category: 'Casacos de Couro' },
+  { id: 'HEAD_LEATHER_ROYAL', name: 'Capuz Real', baseItemId: 'HEAD_LEATHER_SET1', sigils: 4, category: 'Capuzes de Couro' },
+  { id: 'SHOES_LEATHER_ROYAL', name: 'Sapatos Reais', baseItemId: 'SHOES_LEATHER_SET1', sigils: 4, category: 'Sapatos de Couro' },
+
+  // PLATE
+  { id: 'ARMOR_PLATE_ROYAL', name: 'Armadura Real', baseItemId: 'ARMOR_PLATE_SET1', sigils: 8, category: 'Armaduras de Placas' },
+  { id: 'HEAD_PLATE_ROYAL', name: 'Elmo Real', baseItemId: 'HEAD_PLATE_SET1', sigils: 4, category: 'Elmos de Placa' },
+  { id: 'SHOES_PLATE_ROYAL', name: 'Botas Reais', baseItemId: 'SHOES_PLATE_SET1', sigils: 4, category: 'Sapatos de Placa' }
+];
+
+TIERS.forEach(tier => {
+  ENCHANTMENTS.forEach(ench => {
+    const itemEnchSuffix = ench === '0' ? '' : `@${ench}`;
+    
+    ROYAL_ARMORS.forEach(royal => {
+      const royalItemId = `${tier}_${royal.id}${itemEnchSuffix}`;
+      const baseReqId = `${tier}_${royal.baseItemId}${itemEnchSuffix}`;
+      const sigilId = `QUESTITEM_TOKEN_ROYAL_${tier}`;
+      
+      // We only need to push the Sigil item definition once per tier
+      if (ench === '0' && royal.id === 'ARMOR_CLOTH_ROYAL') {
+        ITEMS.push({ id: sigilId, name: `Selo Real ${tier}`, category: 'Selos Reais', tier: tier as any, enchantment: '0' });
+      }
+
+      ITEMS.push({ id: royalItemId, name: `${royal.name} ${tier}.${ench}`, category: royal.category, tier: tier as any, enchantment: ench as any });
+
+      RECIPES.push({
+        itemId: royalItemId,
+        materials: [
+          { itemId: baseReqId, amount: 1 },
+          { itemId: sigilId, amount: royal.sigils }
+        ],
+        fame: TIER_FAME[tier] / (royal.sigils === 8 ? 1 : 2), // approximation
+        baseFocusCost: TIER_FOCUS[tier] / (royal.sigils === 8 ? 1 : 2),
+        journalId: royal.category.includes('Tecido') ? `${tier}_JOURNAL_MAGIC_EMPTY` : 
+                   royal.category.includes('Couro') ? `${tier}_JOURNAL_HUNTER_EMPTY` : `${tier}_JOURNAL_WARRIOR_EMPTY`
+      });
+    });
+  });
+});
+
+
+// --- CRYSTAL WEAPONS ---
+const CRYSTAL_WEAPONS = [
+  { id: '2H_CRYSTALSWORD', name: 'Lâmina Infinita', category: 'Espadas', artifact: '2H_CRYSTALSWORD', resources: { bars: 20, leather: 12 } },
+  { id: '2H_CRYSTALREAPER', name: 'Ceifeira de Cristal', category: 'Machados', artifact: '2H_CRYSTALREAPER', resources: { bars: 20, planks: 12 } },
+  { id: '2H_CRYSTALSPEAR', name: 'Glaive da Fenda', category: 'Lanças', artifact: '2H_CRYSTALSPEAR', resources: { planks: 20, bars: 12 } }
+];
+
+TIERS.forEach(tier => {
+  ENCHANTMENTS.forEach(ench => {
+    const itemEnchSuffix = ench === '0' ? '' : `@${ench}`;
+    
+    CRYSTAL_WEAPONS.forEach(weapon => {
+      // Artifact
+      const artifactId = `${tier}_ARTIFACT_${weapon.artifact}`;
+      if (ench === '0') {
+        ITEMS.push({ id: artifactId, name: `Artefato de ${weapon.name} ${tier}`, category: 'Artefatos de Cristal', tier: tier as any, enchantment: '0' });
+      }
+
+      const itemId = `${tier}_${weapon.id}${itemEnchSuffix}`;
+      ITEMS.push({ id: itemId, name: `${weapon.name} ${tier}.${ench}`, category: weapon.category, tier: tier as any, enchantment: ench as any });
+
+      const materials = [
+        { itemId: artifactId, amount: 1 }
+      ];
+      
+      Object.entries(weapon.resources).forEach(([res, amt]) => {
+        if (amt > 0) {
+          const resMap: Record<string, string> = {
+            bars: 'METALBAR',
+            leather: 'LEATHER',
+            planks: 'PLANKS',
+            cloth: 'CLOTH'
+          };
+          materials.push({ itemId: `${tier}_${resMap[res]}${itemEnchSuffix}`, amount: amt });
+        }
+      });
+
+      RECIPES.push({
+        itemId,
+        materials,
+        fame: TIER_FAME[tier],
+        baseFocusCost: TIER_FOCUS[tier],
+        journalId: `${tier}_JOURNAL_WARRIOR_EMPTY`
+      });
+    });
+  });
+});
+
+export const JOURNAL_CAPACITY: Record<string, number> = {
+  'T4': 900,
+  'T5': 2700,
+  'T6': 8100,
+  'T7': 24300,
+  'T8': 72900
+};
